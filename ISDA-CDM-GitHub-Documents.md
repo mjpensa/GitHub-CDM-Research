@@ -6,7 +6,7 @@ This document catalogs all official ISDA (International Swaps and Derivatives As
 
 # COMPREHENSIVE DOCUMENT COUNT SUMMARY
 
-## Total Count: ~2,100+ Documents/Resources
+## Total Count: ~2,600+ Documents/Resources
 
 | Category | Count |
 |----------|-------|
@@ -14,17 +14,17 @@ This document catalogs all official ISDA (International Swaps and Derivatives As
 | **FINOS CDM Releases** | ~653 |
 | **FINOS CDM GitHub Issues** | 694 |
 | **FINOS CDM Discussions** | 50+ |
-| **Other GitHub CDM Repositories** | 11 repositories (~70+ files) |
 | **ISDA.org CDM Documents** | 35+ |
-| **ISDA-tagged GitHub Repositories** | 9 |
 
 ---
 
 # DETAILED BREAKDOWN
 
-## 1. FINOS Common Domain Model Repository (Primary)
+## 1. FINOS Common Domain Model Repository (Official)
 
 **Repository**: https://github.com/finos/common-domain-model
+
+The official, actively maintained CDM repository hosted under FINOS (Fintech Open Source Foundation). The sponsoring Trade Associations (ISDA, ISLA and ICMA) have commissioned REGnosys to provide the CDM Release Management Service.
 
 ### File Count by Directory (~1,200+ files total)
 
@@ -128,156 +128,7 @@ This document catalogs all official ISDA (International Swaps and Derivatives As
 
 ---
 
-## 2. Other CDM-Related GitHub Repositories
-
-### 2.1 freight-trust/cdm (4 items)
-**Repository**: https://github.com/freight-trust/cdm
-
-| Item | Type |
-|------|------|
-| ISDA_CDMTM_License_Version_2.0 | License file |
-| cdm/ | Directory |
-| docs/ | Directory |
-| finance/ | Directory |
-
-**Key Document**: Official ISDA CDM License Version 2.0 (Feb 26, 2019)
-
----
-
-### 2.2 manifoldfinance/isda (2 files)
-**Repository**: https://github.com/manifoldfinance/isda
-
-| File | Description |
-|------|-------------|
-| LICENSE.spdx | License file |
-| README.mediawiki | ISDA definitions, functions, data types |
-
----
-
-### 2.3 digital-asset-archive/lib-cdm-event-specification-module (9 items)
-**Repository**: https://github.com/digital-asset/lib-cdm-event-specification-module
-
-| Item | Type |
-|------|------|
-| .circleci/ | Directory |
-| daml/ | Directory |
-| docs/ | Directory |
-| haskell/ | Directory |
-| .gitignore | File |
-| LICENSE | Apache-2.0 |
-| NOTICES | File |
-| Readme.md | Documentation |
-| VERSION | File |
-
-*Archived January 16, 2025*
-
----
-
-### 2.4 digital-asset-archive/ex-cdm-swaps (18 items)
-**Repository**: https://github.com/digital-asset-archive/ex-cdm-swaps
-
-| Item | Type |
-|------|------|
-| .circleci/ | Directory |
-| app/ | Directory |
-| daml/ | Directory (contains Org/Isda/Cdm/Classes.daml) |
-| docs/ | Directory |
-| examples/ | Directory |
-| .gitattributes | File |
-| .gitignore | File |
-| Dockerfile-bots | File |
-| Dockerfile-daml | File |
-| Dockerfile-repl | File |
-| LICENSE | Apache-2.0 |
-| Makefile | File |
-| NOTICES | File |
-| README.md | Documentation |
-| daml.yaml | Configuration |
-| docker-compose.yml | File |
-| frontend-config.js | File |
-| ui-backend.conf | File |
-
-*Archived January 13, 2025*
-
----
-
-### 2.5 rosetta-models/g20-tech-sprint (10 items)
-**Repository**: https://github.com/rosetta-models/g20-tech-sprint
-
-| Item | Type |
-|------|------|
-| api-demo/ | Directory |
-| lib/ | Directory |
-| rosetta-source/ | Directory |
-| .gitignore | File |
-| LICENSE | Apache-2.0 |
-| README.md | Documentation |
-| codefresh.yml | CI/CD config |
-| config.json | Configuration |
-| demo.sh | Demo script |
-| pom.xml | Maven config |
-
-*Archived March 5, 2024 - G20 Regulatory Reporting Demo*
-
----
-
-### 2.6 REGnosys/rosetta-dsl (24+ items)
-**Repository**: https://github.com/REGnosys/rosetta-dsl
-
-The Rune DSL foundation for CDM.
-
-| Directories (13) | Files (11) |
-|------------------|------------|
-| .github | .antlr-generator-3.2.0-patch.jar |
-| .junie | .gitignore |
-| docs | .project |
-| rosetta-backport | CODE_OF_CONDUCT.md |
-| rune-ide | CONTRIBUTING.md |
-| rune-integration-tests | CVE-suppressions.xml |
-| rune-lang | LICENSE |
-| rune-maven-plugin | NOTICE |
-| rune-profiling | README.md |
-| rune-runtime | checkstyle.xml |
-| rune-testing | pom.xml |
-| rune-tools | |
-| rune-xcore-plugin-dependencies | |
-
-*1,148 commits, actively maintained*
-
----
-
-### 2.7 mvanmeerbeck/ts-cdm (3+ files)
-**Repository**: https://github.com/mvanmeerbeck/ts-cdm
-
-TypeScript implementation of ISDA CDM.
-
-| Item | Type |
-|------|------|
-| src/ | Directory |
-| README.md | Documentation |
-| package.json | Configuration |
-
----
-
-### 2.8 Additional ISDA-Tagged Repositories (9 total)
-
-**GitHub Topic**: https://github.com/topics/isda
-
-| Repository | Language | Description |
-|------------|----------|-------------|
-| sambacha/compendium | Jupyter Notebook | Finance and crypto collection |
-| Anexen/pyxirr | Rust | Financial functions |
-| meenmo/ISDA_SIMM | Python | ISDA SIMM v2.3~2.6 |
-| digital-asset-archive/lib-cdm-event-specification-module | Haskell | CDM event specification |
-| kmedian/yearfrac | Python | Date fractions |
-| suhasghorp/isda_model | Python | CDS modeling |
-| freight-trust/cdm | TypeScript | ISDA CDM |
-| sambacha/finanical-instrument-events | - | ISDA events |
-| jimzucker/iCDS | C | CDS calculator |
-
----
-
-## 3. ISDA.org Official Documents (35+ documents)
+## 2. ISDA.org Official Documents (35+ documents)
 
 ### CDM Hub Resources (16)
 **URL**: https://www.isda.org/isda-solutions-infohub/cdm/
@@ -334,7 +185,7 @@ TypeScript implementation of ISDA CDM.
 
 ---
 
-## 4. Working Groups & Governance on GitHub
+## 3. Working Groups & Governance on GitHub
 
 | Working Group | GitHub Link |
 |---------------|-------------|
@@ -346,7 +197,7 @@ TypeScript implementation of ISDA CDM.
 
 ---
 
-## 5. Licensing History
+## 4. Licensing History
 
 | Period | License | Location |
 |--------|---------|----------|
@@ -355,7 +206,7 @@ TypeScript implementation of ISDA CDM.
 
 ---
 
-## 6. Official External Resources
+## 5. Official External Resources
 
 | Resource | URL |
 |----------|-----|
@@ -364,15 +215,6 @@ TypeScript implementation of ISDA CDM.
 | ISDA CDM Solutions Hub | https://www.isda.org/isda-solutions-infohub/cdm/ |
 | CDM Downloads | https://cdm.finos.org/docs/download/ |
 | Legacy CDM Portal (pre-4.0.0) | https://portal.cdm.rosetta-technology.io/#/ |
-| GitHub Topics - CDM | https://github.com/topics/common-domain-model |
-| GitHub Topics - ISDA | https://github.com/topics/isda |
-
----
-
-## 7. Key GitHub Topics for Discovery
-
-- https://github.com/topics/common-domain-model (1 repository)
-- https://github.com/topics/isda (9 repositories)
 
 ---
 
@@ -389,27 +231,23 @@ TypeScript implementation of ISDA CDM.
 | FINOS CDM Repository - Releases | ~653 |
 | FINOS CDM Repository - Issues | 694 |
 | FINOS CDM Repository - Discussions | 50+ |
-| Other GitHub Repositories | 11 |
-| Other GitHub Repository Files | ~70 |
 | ISDA.org Hub Resources | 16 |
 | ISDA.org PDF Documents | 19+ |
-| ISDA-tagged GitHub Repos | 9 |
 
 ## Grand Total
 
 | Type | Total |
 |------|-------|
-| **GitHub Files (all repositories)** | ~1,270 |
+| **GitHub Files (FINOS repository)** | ~1,200 |
 | **GitHub Releases** | ~653 |
 | **GitHub Issues** | 694 |
 | **GitHub Discussions** | 50+ |
 | **ISDA.org Documents** | 35+ |
-| **Total GitHub Repositories** | 11 (CDM-specific) + 9 (ISDA-tagged) = 20 |
 
-### **GRAND TOTAL: ~2,700+ documents/resources**
+### **GRAND TOTAL: ~2,600+ documents/resources**
 
 ---
 
 *Document generated: December 7, 2025*
-*Source: GitHub repositories, GitHub API, and ISDA/FINOS official resources*
+*Source: GitHub FINOS repository, GitHub API, and ISDA official resources*
 *Research methodology: Comprehensive web scraping, API queries, and manual verification*
