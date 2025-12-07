@@ -13,13 +13,14 @@
 ```
 /GitHub-CDM-Research/
 ├── tier1-primary/
-│   ├── finos/           (4 files)
-│   ├── isda/            (8 files)
+│   ├── finos/           (4 PDF files)
+│   ├── finos-cdm/       (2,953 files - complete FINOS CDM repo)
+│   ├── isda/            (20 files)
 │   ├── icma/            (13 files)
 │   └── isla/            (1 file)
 ├── tier2-technology/
 │   └── regnosys-rosetta/
-│       └── rosetta-dsl/ (cloned repo)
+│       └── rosetta-dsl/ (~900 files - cloned repo)
 ├── tier3-training/
 │   └── linux-foundation/ (1 file)
 ├── tier4-regulatory/
@@ -30,9 +31,6 @@
 ├── tier6-infrastructure/ (1 file)
 ├── tier7-media/
 │   └── cdm-showcase/
-├── finos-cdm/           (2,953 files - complete FINOS repo)
-├── isda-docs/           (legacy folder)
-├── icma-docs/           (legacy folder)
 └── CDM-SOURCE-INVENTORY.md (this file)
 ```
 
@@ -51,7 +49,7 @@
 
 **Source URL:** https://cdm.finos.org/docs/cdm-materials/
 
-### ISDA (8 files)
+### ISDA (20 files)
 
 | File | Description | Size |
 |------|-------------|------|
@@ -63,6 +61,18 @@
 | Industry-Perspectives-on-the-ISDA-DRR-*.pdf | DRR adoption report (Nov 2025) | 398KB |
 | Collateral-and-Liquidity-Efficiency-in-the-Derivatives-Market.pdf | IFLD whitepaper | 362KB |
 | Creating-Value-IQ-June-2025.pdf | GenAI + CDM research | 8.9MB |
+| CDM-Launch-Press-Release-FINAL.pdf | CDM launch announcement | 216KB |
+| Demystifying-Collateral-Optimization.pdf | Collateral optimization guide | 201KB |
+| Digital-Asset-ISDA-CDM-Adoption-Press-Release.pdf | Digital Asset CDM adoption | 386KB |
+| GenAI-in-the-Derivatives-Market-A-Future-Perspective.pdf | GenAI derivatives analysis | 268KB |
+| Guidelines-for-Smart-Contracts-CDS.pdf | Smart contracts for CDS | 806KB |
+| ISDA-Clause-Library-factsheet-2021.pdf | Clause Library overview | 1.1MB |
+| ISDA-and-KWM-Publish-Smart-Contracts-Whitepaper-03102018.pdf | Smart contracts whitepaper | 53KB |
+| Marking-a-Milestone-IQ-January-2025.pdf | IQ milestone edition | 5.8MB |
+| Milestone-Update-for-the-Common-Domain-Model.pdf | CDM milestone update | 154KB |
+| Smart-Derivatives-Contracts-From-Concept-to-Construction-Oct-2018.pdf | Smart derivatives construction | 342KB |
+| Vermeg-Integrates-CDM-into-Colline-Collateral-Management-System.pdf | Vermeg CDM integration | 154KB |
+| infrastructure-white-paper.pdf | Infrastructure whitepaper | 1.0MB |
 
 **Source URL:** https://www.isda.org/isda-solutions-infohub/cdm/
 
@@ -205,7 +215,7 @@
 
 ## Complete FINOS CDM Repository
 
-**Location:** `/finos-cdm/`
+**Location:** `/tier1-primary/finos-cdm/`
 **Files:** 2,953
 **Size:** ~50MB
 
