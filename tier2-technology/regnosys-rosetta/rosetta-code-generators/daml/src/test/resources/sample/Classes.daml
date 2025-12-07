@@ -1,0 +1,30 @@
+daml 1.2
+
+-- | This file is auto-generated from the ISDA Common
+--   Domain Model, do not edit.
+--   @version test
+module Org.Isda.Cdm.Classes
+  ( module Org.Isda.Cdm.Classes ) where
+
+import Org.Isda.Cdm.Enums
+import Com.Regnosys.Meta.ZonedDateTime
+import Com.Regnosys.Meta.DateTime
+import Com.Regnosys.Meta.MetaClasses hiding (Reference)
+import Com.Regnosys.Meta.MetaFields
+import Prelude hiding (Party, exercise, id, product, agreement, ContractId)
+
+-- | A sample data
+data DataFoo = DataFoo with 
+  stringAttribute : Text
+  intAttribute : Int
+  multipleAttribute : [Foo]
+    deriving (Eq, Ord, Show)
+
+-- | A sample class
+data Foo = Foo with 
+  stringAttribute : Text
+  intAttribute : Int
+  dataAttribute : DataFoo
+  multipleAttribute : [Text]
+    deriving (Eq, Ord, Show)
+

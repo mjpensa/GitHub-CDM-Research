@@ -1,0 +1,502 @@
+@Ecore(nsURI="http://www.rosetta-model.com/RosettaExpression")
+@GenModel(fileExtensions="rosetta", modelDirectory="/rune-lang/emf-gen/main/java", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
+
+package com.regnosys.rosetta.rosetta.expression
+
+import java.util.regex.Pattern
+import org.eclipse.xtext.EcoreUtil2
+
+import com.regnosys.rosetta.rosetta.simple.Function
+import com.regnosys.rosetta.rosetta.RosettaEnumeration
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.RosettaFeature
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
+import com.regnosys.rosetta.rosetta.RosettaTyped
+import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.ChoiceOption
+import com.regnosys.rosetta.rosetta.simple.Data
+import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.RosettaEnumValue
+
+
+interface RosettaExpression {
+	// Whether the expression was generated
+	boolean generated
+}
+
+/**
+ * An object that may get an implicit variable generated as input.
+ */
+interface HasGeneratedInput {
+	boolean generatedInputWasSet
+	
+	op RosettaExpression getInput()
+	op void setGeneratedInputIfAbsent(RosettaExpression e)
+	op boolean needsGeneratedInput()
+}
+
+/**
+ * Literals
+ */
+
+interface RosettaLiteral extends RosettaExpression, RosettaMapTestExpression {
+	op Object containedValue()
+
+	op String stringValue()
+}
+
+class RosettaBooleanLiteral extends RosettaLiteral {
+	boolean value
+	
+	op Object containedValue() {
+		return isValue
+	}
+	op String stringValue() {
+		return Boolean.toString(value)
+	}
+}
+
+class RosettaStringLiteral extends RosettaLiteral {
+	String value
+	
+	op Object containedValue() {
+		return value
+	}
+	op String stringValue() {
+		return '"' + value + '"'
+	}
+}
+
+class RosettaNumberLiteral extends RosettaLiteral {
+	BigDecimal value
+	
+	op Object containedValue() {
+		return value
+	}
+	op String stringValue() {
+		return value.toPlainString
+	}
+}
+
+class RosettaIntLiteral extends RosettaLiteral {
+	BigInteger value
+	
+	op Object containedValue() {
+		return value
+	}
+	op String stringValue() {
+		return value.toString
+	}
+}
+
+// Not supported - see issue https://github.com/finos/rune-dsl/issues/524
+type Pattern wraps Pattern
+class RosettaPatternLiteral extends RosettaLiteral {
+	Pattern value
+	
+	op Object containedValue() {
+		return value
+	}
+	op String stringValue() {
+		return '/' + value.toString() + '/'
+	}
+}
+
+/*
+ * List construction
+ */
+
+class ListLiteral extends RosettaExpression {
+	contains RosettaExpression[] elements
+}
+
+/*
+ * Variables, projections, conditionals, function calls and constructors
+ */
+
+abstract class RosettaCallableReference extends RosettaExpression {
+	boolean explicitArguments
+	contains RosettaExpression[] rawArgs
+	
+	boolean implicitVariableIsInContext
+	contains RosettaExpression implicitArgument
+	
+	op RosettaExpression[] getArgs() {
+	    rawArgs
+	}
+}
+
+class RosettaSymbolReference extends RosettaCallableReference {
+	refers RosettaSymbol symbol
+	
+	op RosettaExpression[] getArgs() {
+		if (!explicitArguments && implicitVariableIsInContext && symbol instanceof RosettaCallableWithArgs && (symbol as RosettaCallableWithArgs).numberOfParameters == 1) {
+			if (implicitArgument === null) {
+				val def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
+				def.setName("item");
+				def.setGenerated(true);
+				implicitArgument = def
+			}
+			return new BasicEList(#[implicitArgument])
+		}
+		return rawArgs
+	}
+}
+
+class RosettaImplicitVariable extends RosettaExpression, RosettaNamed, AnnotationPathExpression {
+}
+
+class RosettaSuperCall extends RosettaCallableReference, RosettaNamed {
+    op Function getSuperFunction() {
+        val containingFunction = EcoreUtil2.getContainerOfType(this, Function)
+        if (containingFunction !== null) {
+            return containingFunction.superFunction
+        }
+        return null
+    }
+
+	op RosettaExpression[] getArgs() {
+		if (!explicitArguments && implicitVariableIsInContext) {
+			val superFunction = this.getSuperFunction
+			if (superFunction !== null && superFunction.numberOfParameters == 1) {
+				if (implicitArgument === null) {
+					val def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
+					def.setName("item");
+					def.setGenerated(true);
+					implicitArgument = def
+				}
+				return new BasicEList(#[implicitArgument])
+			}
+		}
+		return rawArgs
+	}
+}
+
+class RosettaFeatureCall extends RosettaExpression {
+	contains RosettaExpression receiver
+	refers RosettaFeature feature
+}
+
+class RosettaDeepFeatureCall extends RosettaExpression {
+	contains RosettaExpression receiver
+	refers Attribute feature
+}
+
+class RosettaConditionalExpression extends RosettaExpression {
+	contains RosettaExpression ^if
+	contains RosettaExpression ifthen
+	contains RosettaExpression elsethen
+	
+	boolean full // whether the conditional expression has an explicit `else` branch.
+}
+
+class RosettaConstructorExpression extends RosettaExpression, RosettaTyped {
+	contains ConstructorKeyValuePair[] values
+	boolean implicitEmpty
+}
+
+class ConstructorKeyValuePair {
+	refers RosettaFeature key
+	contains RosettaExpression value
+}
+
+interface RosettaOperation extends RosettaExpression {
+	String operator
+}
+/**
+ * Binary operations
+ */
+interface RosettaBinaryOperation extends RosettaOperation, HasGeneratedInput {
+	contains RosettaExpression left
+	contains RosettaExpression right
+	
+	op RosettaExpression getInput() {
+		left
+	}
+	op void setGeneratedInputIfAbsent(RosettaExpression e) {
+		if (e === null) {
+			if (generatedInputWasSet) {
+				left = null
+				generatedInputWasSet = false
+			}
+		} else {
+			if (!generatedInputWasSet) {
+				left = e
+				generatedInputWasSet = true
+			}
+		}
+	}
+	op boolean needsGeneratedInput() {
+		left === null
+	}
+}
+
+class ArithmeticOperation extends RosettaBinaryOperation {
+}
+
+class DefaultOperation extends RosettaBinaryOperation {
+}
+
+class LogicalOperation extends RosettaBinaryOperation {
+}
+
+enum CardinalityModifier {
+	NONE as "none",
+	ALL as "all",
+	ANY as "any"
+}
+
+interface ModifiableBinaryOperation extends RosettaBinaryOperation {
+	CardinalityModifier cardMod
+}
+
+class EqualityOperation extends ModifiableBinaryOperation {
+}
+
+class ComparisonOperation extends ModifiableBinaryOperation {
+}
+
+class RosettaContainsExpression extends RosettaBinaryOperation {
+}
+
+class RosettaDisjointExpression extends RosettaBinaryOperation {
+}
+
+class JoinOperation extends RosettaBinaryOperation {
+	boolean explicitSeparator
+}
+
+/**
+ * Only exists checks
+ */
+
+class RosettaOnlyExistsExpression extends RosettaExpression {
+	contains RosettaExpression[] args
+	boolean hasParentheses
+}
+
+/**
+ * Unary operations
+ */
+
+interface RosettaUnaryOperation extends RosettaOperation, HasGeneratedInput {
+	contains RosettaExpression argument
+	
+	op RosettaExpression getInput() {
+		argument
+	}
+	op void setGeneratedInputIfAbsent(RosettaExpression e) {
+		if (e === null) {
+			if (generatedInputWasSet) {
+				argument = null
+				generatedInputWasSet = false
+			}
+		} else {
+			if (!generatedInputWasSet) {
+				argument = e
+				generatedInputWasSet = true
+			}
+		}
+	}
+	op boolean needsGeneratedInput() {
+		argument === null
+	}
+}
+
+interface ListOperation extends RosettaUnaryOperation {
+}
+
+interface CanHandleListOfLists extends RosettaUnaryOperation {
+}
+
+enum ExistsModifier {
+	NONE,
+	SINGLE,
+	MULTIPLE
+}
+
+
+class RosettaExistsExpression extends RosettaUnaryOperation {
+    ExistsModifier modifier
+}
+
+class RosettaAbsentExpression extends RosettaUnaryOperation {
+}
+
+class RosettaOnlyElement extends ListOperation {
+}
+
+class RosettaCountOperation extends RosettaUnaryOperation {
+}
+
+class FlattenOperation extends ListOperation, CanHandleListOfLists {
+}
+
+class DistinctOperation extends ListOperation {
+}
+
+class ReverseOperation extends ListOperation {
+}
+
+class FirstOperation extends ListOperation {
+}
+
+class LastOperation extends ListOperation {
+}
+
+class SumOperation extends ListOperation {
+}
+
+class AsKeyOperation extends RosettaUnaryOperation {
+}
+
+class OneOfOperation extends RosettaUnaryOperation {
+}
+
+enum Necessity {
+	optional, required
+}
+
+class ChoiceOperation extends RosettaUnaryOperation {
+	Necessity necessity
+	refers Attribute[] attributes
+}
+
+class ToStringOperation extends RosettaUnaryOperation {
+}
+
+interface ParseOperation extends RosettaUnaryOperation {
+}
+
+class ToNumberOperation extends ParseOperation {
+}
+
+class ToIntOperation extends ParseOperation {
+}
+
+class ToTimeOperation extends ParseOperation {
+}
+
+class ToEnumOperation extends ParseOperation {
+	refers RosettaEnumeration enumeration 
+}
+
+class ToDateOperation extends ParseOperation {
+}
+
+class ToDateTimeOperation extends ParseOperation {
+}
+
+class ToZonedDateTimeOperation extends ParseOperation {
+}
+
+class SwitchOperation extends RosettaUnaryOperation {
+	contains SwitchCaseOrDefault[] cases opposite switchOperation
+	
+	op RosettaExpression getDefault() {
+		cases.findFirst[isDefault]?.expression
+	}
+}
+class SwitchCaseOrDefault {
+	container SwitchOperation switchOperation opposite cases
+	contains SwitchCaseGuard guard opposite ^case
+	contains RosettaExpression expression
+	
+	op boolean isDefault() {
+		guard === null
+	}
+}
+class SwitchCaseGuard {
+	container SwitchCaseOrDefault ^case opposite guard
+	
+	contains RosettaLiteral literalGuard
+	
+	@GenModel(suppressedGetVisibility="true") // mark property as internal
+	refers SwitchCaseTarget referenceGuard
+	
+	refers derived RosettaEnumValue enumGuard get {
+		val s = eGet(ExpressionPackage::eINSTANCE.switchCaseGuard_ReferenceGuard)
+		if (s instanceof RosettaEnumValue) {
+			return s
+		}
+		return null
+	}
+	refers derived ChoiceOption choiceOptionGuard get {
+		val s = eGet(ExpressionPackage::eINSTANCE.switchCaseGuard_ReferenceGuard)
+		if (s instanceof ChoiceOption) {
+			return s
+		}
+		return null
+	}
+	refers derived Data dataGuard get {
+		val s = eGet(ExpressionPackage::eINSTANCE.switchCaseGuard_ReferenceGuard)
+		if (s instanceof Data) {
+			return s
+		}
+		return null
+	}
+}
+interface SwitchCaseTarget {
+}
+
+class WithMetaOperation extends RosettaUnaryOperation {
+	contains WithMetaEntry[] entries opposite withMetaOperation
+}
+
+class WithMetaEntry {
+	container WithMetaOperation withMetaOperation opposite entries
+	refers RosettaFeature key
+	contains RosettaExpression value
+}
+
+/**
+ * Functional operations
+ */
+
+class ClosureParameter extends RosettaSymbol {
+	container InlineFunction function opposite parameters
+}
+
+class InlineFunction {
+	contains ClosureParameter[] parameters opposite function
+	contains RosettaExpression body
+}
+
+interface RosettaFunctionalOperation extends RosettaUnaryOperation {
+	contains InlineFunction function
+}
+
+interface MandatoryFunctionalOperation extends RosettaFunctionalOperation {
+}
+
+interface UnaryFunctionalOperation extends RosettaFunctionalOperation {
+}
+
+class ReduceOperation extends MandatoryFunctionalOperation, ListOperation {
+}
+
+class FilterOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
+}
+
+class MapOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
+}
+
+class ThenOperation extends MandatoryFunctionalOperation, UnaryFunctionalOperation, CanHandleListOfLists {
+}
+
+interface ComparingFunctionalOperation extends RosettaFunctionalOperation, UnaryFunctionalOperation {
+}
+
+class SortOperation extends ComparingFunctionalOperation, ListOperation {
+}
+
+class MinOperation extends ComparingFunctionalOperation, ListOperation {
+}
+
+class MaxOperation extends ComparingFunctionalOperation, ListOperation {
+}

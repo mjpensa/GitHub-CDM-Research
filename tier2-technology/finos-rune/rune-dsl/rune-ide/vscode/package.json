@@ -1,0 +1,143 @@
+{
+  "name": "rune-language",
+  "displayName": "rune-language",
+  "description": "Rune DSL",
+  "version": "5.0.0",
+  "repository": "https://github.com/finos/rune-dsl",
+  "license": "LICENSE",
+  "engines": {
+    "vscode": "^1.73.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "overrides": {
+    "tar-fs": "^3.0.5"
+  },
+  "activationEvents": [
+    "onLanguage:rosetta"
+  ],
+  "main": "out/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "rosetta",
+        "aliases": [
+          "Rosetta DSL",
+          "rosetta"
+        ],
+        "extensions": [
+          ".rosetta"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "rosetta",
+        "scopeName": "source.rosetta",
+        "path": "./syntaxes/rosetta.tmLanguage.json"
+      }
+    ],
+    "semanticTokenTypes": [
+      {
+        "id": "basicType",
+        "superType": "type",
+        "description": "A Rosetta basicType such as `string` and `number`."
+      },
+      {
+        "id": "recordType",
+        "superType": "type",
+        "description": "A Rosetta recordType such as `date`."
+      },
+      {
+        "id": "typeAlias",
+        "superType": "type",
+        "description": "A Rosetta typeAlias."
+      },
+      {
+        "id": "documentCorpus",
+        "description": "A reference to a corpus of a document."
+      },
+      {
+        "id": "metaMember",
+        "superType": "property",
+        "description": "A meta member of a type."
+      },
+      {
+        "id": "inlineParameter",
+        "superType": "parameter",
+        "description": "A parameter of an inline function."
+      },
+      {
+        "id": "output",
+        "superType": "parameter",
+        "description": "The output parameter of a function."
+      },
+      {
+        "id": "rule",
+        "description": "A reference to a rule."
+      },
+      {
+        "id": "implicitVariable",
+        "description": "The implicit variable (`item`)."
+      }
+    ],
+    "semanticTokenModifiers": [
+      {
+        "id": "singleCardinality",
+        "description": "A symbol of single cardinality."
+      },
+      {
+        "id": "multiCardinality",
+        "description": "A symbol of multi cardinality."
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "language": "rosetta",
+        "scopes": {
+          "type": ["entity.name.type.type.rosetta"],
+          "enum": ["entity.name.type.enum.rosetta"],
+          "basicType": ["entity.name.type.builtin.basic-type.rosetta"],
+          "recordType": ["entity.name.type.builtin.record-type.rosetta"],
+          "qualifiedType": ["entity.name.type.builtin.qualified-type.rosetta"],
+          "calculationType": ["entity.name.type.builtin.calculation-type.rosetta"],
+          "documentCorpus": ["entity.name.document.corpus.rosetta"],
+          "documentSegment": ["entity.name.document.segment.rosetta"],
+          "property": ["variable.other.member.rosetta"],
+          "metaMember": ["variable.other.member.meta.rosetta"],
+          "enumMember": ["variable.other.enummember.rosetta"],
+          "variable": ["variable.other.alias.rosetta"],
+          "parameter": ["variable.parameter.input.rosetta"],
+          "output": ["variable.parameter.output.rosetta"],
+          "inlineParameter": ["variable.parameter.inline.rosetta"],
+          "function": ["entity.name.function.rosetta"],
+          "function.defaultLibrary": ["entity.name.function.builtin.rosetta"],
+          "rule": ["entity.name.rule.rosetta"],
+          "implicitVariable": ["constant.language.rosetta"]
+        }
+      }
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.73.1",
+    "shx": "^0.3.4",
+    "typescript": "^5.0.0",
+    "vscode-test": "^1.6.1"
+  },
+  "dependencies": {
+    "vsce": "^2.14.0",
+    "vscode-languageclient": "^10.0.0-next.17"
+  },
+  "scripts": {
+    "copy-lsp": "shx cp -r ../target/languageserver src/rosetta",
+    "copy-text-mate": "shx cp -r ../src-gen/main/resources/syntaxes .",
+    "prepublish": "npm run copy-lsp && npm run copy-text-mate && tsc -p ./src",
+    "compile": "tsc -p ./src",
+    "watch": "tsc -w -p ./src",
+    "update-vscode": "node ./node_modules/vscode/bin/install",
+    "build": "npm run copy-lsp && npm run copy-text-mate && tsc -p ./src && vsce package"
+  }
+}

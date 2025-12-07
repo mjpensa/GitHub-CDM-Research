@@ -1,0 +1,232 @@
+@Ecore(nsURI="http://www.rosetta-model.com/RosettaSimple")
+@GenModel(fileExtensions="rosetta", modelDirectory="/rune-lang/emf-gen/main/java", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
+
+package com.regnosys.rosetta.rosetta.simple
+
+import com.regnosys.rosetta.rosetta.RosettaSymbol
+import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaClassSynonym
+import com.regnosys.rosetta.rosetta.RosettaDefinable
+import com.regnosys.rosetta.rosetta.RosettaDocReference
+import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
+import com.regnosys.rosetta.rosetta.RosettaNamed
+import com.regnosys.rosetta.rosetta.RosettaRootElement
+import com.regnosys.rosetta.rosetta.RosettaSynonym
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
+import com.regnosys.rosetta.rosetta.RosettaTypedFeature
+import com.regnosys.rosetta.rosetta.RosettaRule
+import org.eclipse.emf.common.util.BasicEList
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.RosettaAttributeReferenceSegment
+import com.regnosys.rosetta.rosetta.RosettaCardinality
+import com.regnosys.rosetta.rosetta.RosettaFactory
+import com.regnosys.rosetta.rosetta.expression.ExpressionFactory
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseTarget
+import com.regnosys.rosetta.rosetta.RosettaFeature
+
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import org.eclipse.emf.common.util.EList
+import com.regnosys.rosetta.rosetta.RosettaPackage.Literals
+
+abstract class RootElement extends RosettaRootElement, RosettaNamed, RosettaDefinable, Annotated {
+}
+
+/* ANNOTATIONS */
+class Annotation extends RootElement, RosettaNamed {
+	String prefix
+	contains Attribute[] attributes
+}
+
+interface Annotated {
+	contains AnnotationRef[] annotations
+}
+
+//An arbitrary name=value qualifier on an annotation
+class AnnotationQualifier {
+	String qualName
+	String qualValue
+	contains RosettaAttributeReferenceSegment qualPath
+}
+
+class AnnotationRef {
+	refers Annotation ^annotation
+	refers Attribute attribute
+	contains AnnotationQualifier[] qualifiers
+}
+
+interface BuiltinAnnotation extends RosettaNamed {
+}
+interface BuiltinAnnotationWithPath extends BuiltinAnnotation {
+	contains AnnotationPathExpression path
+}
+class LabelAnnotation extends BuiltinAnnotationWithPath {
+	boolean deprecatedAs
+	String label
+}
+class RuleReferenceAnnotation extends BuiltinAnnotationWithPath {
+	refers RosettaRule reportingRule
+	boolean empty
+}
+
+interface AnnotationPathExpression {
+}
+class AnnotationPathAttributeReference extends AnnotationPathExpression {
+	refers Attribute attribute
+}
+class AnnotationPath extends AnnotationPathExpression {
+	String operator
+	contains AnnotationPathExpression receiver
+	refers Attribute attribute
+}
+class AnnotationDeepPath extends AnnotationPathExpression {
+	String operator
+	contains AnnotationPathExpression receiver
+	refers Attribute attribute
+}
+/* END ANNOTATIONS */
+
+interface AssignPathRoot extends RosettaSymbol {
+}
+
+class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, References, AssignPathRoot {
+	boolean override
+	contains RosettaCardinality card
+	contains RosettaSynonym[] synonyms
+	contains RuleReferenceAnnotation[] ruleReferences
+	contains LabelAnnotation[] labels
+}
+
+
+class Data extends RosettaTypeWithConditions, RootElement, References, SwitchCaseTarget {
+	refers Data superType
+	contains RosettaClassSynonym[] synonyms
+	contains Attribute[] attributes
+	
+	op boolean hasSuperType() {
+		return superType !== null
+	}
+}
+
+
+class Choice extends Data {
+	contains Condition[] _hardcodedConditions
+	
+	contains derived ChoiceOption[] options get {
+		attributes as EList
+	}
+	
+	op Condition[] getConditions() {
+		if (_hardcodedConditions.empty) {			
+			val cond = SimpleFactory.eINSTANCE.createCondition
+			cond.name = "Choice"
+			
+			val oneOf = ExpressionFactory.eINSTANCE.createOneOfOperation
+			oneOf.generated = true
+			cond.expression = oneOf
+			
+			val item = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable
+			item.name = "item"
+			item.generated = true
+			oneOf.argument = item
+			
+			_hardcodedConditions.add(cond)
+		}
+		return _hardcodedConditions
+	}
+}
+
+class ChoiceOption extends Attribute, SwitchCaseTarget {
+	String _hardcodedName
+	contains RosettaCardinality _hardcodedCardinality
+	
+	op String getName() {
+		if (_hardcodedName === null) {
+			_hardcodedName = NodeModelUtils.getTokenText(NodeModelUtils.findNodesForFeature(typeCall, Literals.TYPE_CALL__TYPE).head)
+		}
+		return _hardcodedName
+	}
+	
+	op RosettaCardinality getCard() {
+		if (_hardcodedCardinality === null) {
+			_hardcodedCardinality = RosettaFactory.eINSTANCE.createRosettaCardinality
+			_hardcodedCardinality.inf = 0
+			_hardcodedCardinality.sup = 1
+		}
+		return _hardcodedCardinality
+	}
+}
+
+class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs, References {
+	refers Function superFunction
+	contains Attribute[] inputs
+	contains Attribute output
+	contains ShortcutDeclaration[] shortcuts opposite function
+	contains Condition[] conditions
+	contains Operation[] operations opposite function
+	contains Condition[] postConditions
+	
+	op int numberOfParameters() {
+		inputs.size
+	}
+}
+
+class FunctionDispatch extends Function {
+	refers Attribute attribute
+	contains RosettaEnumValueReference value
+}
+
+class Condition extends RosettaDefinable, Annotated, RosettaNamed, References {
+	boolean postCondition
+	container RosettaTypeWithConditions _enclosingType opposite conditions
+	contains RosettaExpression expression
+	
+	op RosettaTypeWithConditions getEnclosingType() {
+		if (_enclosingType !== null) {
+			return _enclosingType
+		}
+		return org.eclipse.xtext.EcoreUtil2.getContainerOfType(this, Choice)
+	}
+	
+	
+}
+
+class Operation extends RosettaDefinable {
+	container Function function opposite operations
+	refers AssignPathRoot assignRoot
+	contains Segment path
+	contains RosettaExpression expression
+	boolean add
+	op Segment[] pathAsSegmentList() {
+		return if(path !== null) path.asSegmentList(path) else new BasicEList
+	}
+}
+
+class Segment {
+	refers RosettaFeature feature
+	contains Segment next opposite prev
+	container Segment prev opposite next
+	
+	op Segment[] asSegmentList(Segment path) {
+		val result = new BasicEList
+		if (path !== null) {
+			result.add(path)
+			val segmentNext = path?.next
+			if (segmentNext !== null) {
+				result.addAll(asSegmentList(segmentNext))
+			}
+		}
+		return result
+	}
+}
+
+class ShortcutDeclaration extends RosettaNamed, RosettaDefinable, AssignPathRoot {
+	container Function function opposite shortcuts
+	contains RosettaExpression expression
+}
+
+class References {
+	contains RosettaDocReference[] references
+}
+

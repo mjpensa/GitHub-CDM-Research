@@ -1,0 +1,11 @@
+{
+  "@model" : "serialization",
+  "@type" : "serialization.test.passing.metakey.Root",
+  "@version" : "0.0.0",
+  "attributeRef" : {
+    "dateField" : {
+      "@key:external" : "someExternalKey",
+      "@data" : "2024-12-12"
+    }
+  }
+}

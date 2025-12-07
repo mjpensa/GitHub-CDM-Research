@@ -1,0 +1,7 @@
+/.classpath
+/.project
+/target/
+/.settings/
+/.idea
+src/generated
+/src/main/resources/coding-schemes/fpml/codelist.zip

@@ -1,0 +1,1437 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json
+# Useful docs:
+# - https://macromates.com/manual/en/language_grammars
+# - https://www.apeth.com/nonblog/stories/textmatebundle.html
+# - https://www.sublimetext.com/docs/scope_naming.html
+#
+# Examples:
+# - Java: https://github.com/microsoft/vscode-textmate/blob/main/test-cases/first-mate/fixtures/java.json
+# - TypeScript: https://github.com/microsoft/TypeScript-TmLanguage/blob/master/TypeScript.YAML-tmLanguage
+# - Python: https://github.com/MattDMo/PythonImproved/blob/master/PythonImproved.YAML-tmLanguage
+name: Rosetta DSL
+scopeName: source.rosetta
+fileTypes: [rosetta]
+
+# TODO: clean up `storage` scopes
+# TODO: review usage of qualifiedIdentifier versus identifier
+
+variables:
+  wordStart: \b # (?<!-)\b We do not consider a dash to be a word boundary
+  wordEnd: \b   # \b(?!-) TODO: make it work in nested lookbehinds/lookaheads
+  identifierStart: \^?{{wordStart}}[_[:alpha:]]
+  identifier: '{{identifierStart}}[_[:alnum:]]*{{wordEnd}}'
+  notAnIdentifier: ((?!{{identifierStart}})[:graph:])
+  qualifiedIdentifier: ({{identifier}})(?:\s*(\.)\s*({{identifier}}))*
+  
+  # Keywords indicating the start of a root element are split in three categories:
+  # - keywords that may also be used as an identifier (e.g., `version`),
+  # - keywords that may also be used as another keyword in a certain context (e.g., `synonym`),
+  # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
+  identifiersConflictingWithNamespace: '{{wordStart}}(scope|version){{wordEnd}}'
+  ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
+  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|choice|func){{wordEnd}}'
+  rootStart: '{{ambiguousRootStart}}|{{unambiguousRootStart}}'
+  namespaceEnd: (?={{identifiersConflictingWithNamespace}}|{{ambiguousRootStart}}|{{unambiguousRootStart}})
+  rootEnd: (?={{ambiguousRootStart}}|{{unambiguousRootStart}})
+  unambiguousRootEnd: (?={{unambiguousRootStart}})
+  sectionStart: '{{wordStart}}((post-)?condition|set|add|inputs|output|alias){{wordEnd}}'
+  sectionEnd: (?={{sectionStart}}|{{rootStart}})(?!\bcondition\b)|(?=\bcondition\b\s*({{identifier}})?:)
+  functionalOperation: '{{wordStart}}(reduce|filter|extract|sort|min|max){{wordEnd}}'
+  listOperationWord: '{{functionalOperation}}|{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}'
+  listOperation: ->>|->|{{listOperationWord}}
+  synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge|condition-func|condition-path){{wordEnd}}'
+  synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
+  synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
+  docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
+  docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
+  expressionEndIgnoringComma: '(?=\)|\]|\})|(?={{wordStart}}to{{wordEnd}}\s)|{{sectionEnd}}'
+  expressionEnd: '(?=,)|{{expressionEndIgnoringComma}}'
+  functionalOperationEnd: (?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{expressionEnd}}
+
+patterns:
+- include: '#model'
+- include: '#comment'
+
+repository:
+  model:
+    patterns:
+    - include: '#namespace'
+    - include: '#scope'
+    - include: '#version'
+    - include: '#import'
+    - include: '#configuration'
+    - include: '#rootElement'
+
+    repository:
+      namespace:
+        name: meta.namespace.rosetta
+        begin: '(?:{{wordStart}}(override){{wordEnd}}\s+)?{{wordStart}}(namespace){{wordEnd}}'
+        beginCaptures:
+          1: { name: keyword.other.override.rosetta }
+          2: { name: keyword.other.namespace.rosetta }
+        end: '{{namespaceEnd}}'
+        patterns:
+        - include: '#comment'
+        - include: '#documentation'
+        - include: '#string'
+        - name: entity.name.namespace.rosetta
+          match: '{{identifier}}'
+        - name: punctuation.separator.dot.rosetta
+          match: \.
+        - include: '#colon'
+      
+      scope:
+        name: meta.scope.rosetta
+        begin: '{{wordStart}}scope{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.scope.rosetta }
+        end: '{{rootEnd}}|(?={{wordStart}}version{{wordEnd}})'
+        patterns:
+          - include: '#comment'
+          - name: entity.name.scope.rosetta
+            match: '{{identifier}}'
+
+      version:
+        name: meta.version.rosetta
+        begin: '{{wordStart}}version{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.version.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - include: '#string'
+
+      import:
+        name: meta.import.rosetta
+        begin: '{{wordStart}}import{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.import.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - include: '#string'
+        - name: keyword.other.as.rosetta
+          match: '{{wordStart}}as{{wordEnd}}'
+        - name: entity.name.namespace.rosetta
+          match: '{{identifier}}'
+        - name: punctuation.separator.dot.rosetta
+          match: \.
+        - name: constant.language.wildcard.rosetta
+          match: \*
+
+      configuration:
+        name: meta.configuration.rosetta
+        begin: '{{wordStart}}(isEvent|isProduct){{wordEnd}}'
+        beginCaptures:
+          1: { name: keyword.other.configuration.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '{{wordStart}}root{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.other.root.rosetta }
+          end: '{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - name: punctuation.terminator.rosetta
+            match: ;
+          - name: entity.name.type.type.rosetta
+            match: '{{identifier}}'
+          - name: punctuation.separator.dot.rosetta
+            match: \.
+
+      rootElement:
+        patterns:
+          - include: '#rosettaBody'
+          - include: '#rosettaCorpus'
+          - include: '#rosettaSegment'
+          - include: '#rosettaBasicType'
+          - include: '#rosettaRecordType'
+          - include: '#rosettaTypeAlias'
+          - include: '#rosettaLibraryFunction'
+          - include: '#rosettaAnnotationSource'
+          - include: '#rosettaRule'
+          - include: '#rosettaMetaType'
+          - include: '#rosettaReport'
+          - include: '#enumerationDeclaration'
+          - include: '#annotationDeclaration'
+          - include: '#typeDeclaration'
+          - include: '#choiceDeclaration'
+          - include: '#functionDeclaration'
+
+      rosettaBody:
+        name: meta.body.rosetta
+        begin: '{{wordStart}}body{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.body.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: entity.name.document.body-type.rosetta }
+          end: '{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - name: entity.name.document.body.rosetta
+            match: '{{identifier}}'
+          - include: '#documentation'
+
+      rosettaCorpus:
+        name: meta.corpus.rosetta
+        begin: '{{wordStart}}corpus{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.corpus.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: entity.name.document.corpus-type.rosetta }
+          end: '{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#string'
+          - name: entity.name.document.rosetta # note: I cannot differentiate between the body and the corpus here :(
+            match: '{{identifier}}'
+          - include: '#documentation'
+
+      rosettaSegment:
+        name: meta.segment.rosetta
+        begin: '{{wordStart}}segment{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.segment.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - name: entity.name.document.segment.rosetta
+          match: '{{identifier}}'
+
+      rosettaBasicType:
+        name: meta.basic-type.rosetta
+        begin: '{{wordStart}}basicType{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.basic-type.rosetta keyword.declaration.basic-type.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - name: entity.name.type.builtin.basic-type.rosetta
+          match: '{{identifier}}'
+        - include: '#typeParameters'
+        - include: '#documentation'
+
+      rosettaRecordType:
+        name: meta.record-type.rosetta
+        begin: '{{wordStart}}recordType{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.record-type.rosetta keyword.declaration.record-type.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: (?<={{wordStart}}recordType{{wordEnd}})
+          end: (?=\{)|{{rootEnd}}
+          patterns:
+          - include: '#comment'
+          - name: entity.name.type.builtin.record-type.rosetta
+            match: '{{identifier}}'
+        - include: '#rosettaBracedFeatures'
+
+      rosettaBracedFeatures:
+        name: meta.braces.rosetta
+        begin: (\{)
+        beginCaptures:
+          1: { name: punctuation.section.braces.begin.rosetta }
+        end: (\})|{{rootEnd}}
+        endCaptures:
+          1: { name: punctuation.section.braces.end.rosetta }
+        patterns:
+        - include: '#comment'
+        - include: '#rosettaBracedFeature'
+
+      rosettaBracedFeature:
+        name: meta.braced-feature.rosetta
+        begin: '{{identifier}}'
+        beginCaptures:
+          0: { name: variable.other.member.rosetta }
+        end: '({{identifier}})|\s*{{notAnIdentifier}}|{{rootEnd}}'
+        endCaptures:
+          1: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
+          2: { name: invalid.illegal.identifier.rosetta }
+        patterns:
+        - include: '#comment'
+
+      rosettaTypeAlias:
+        name: meta.type-alias.rosetta
+        begin: '{{wordStart}}typeAlias{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.type-alias.rosetta keyword.declaration.type-alias.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: entity.name.type.type-alias.rosetta }
+          end: '{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - begin: (?<=[_[:alnum:]]{{wordEnd}})  # used to be '(?<={{identifier}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
+            end: '(:)|{{rootEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#condition'
+            - include: '#typeParameters'
+          - include: '#documentation'
+          - include: '#typeCall'
+
+      typeParameters:
+        name: meta.type-parameters.rosetta
+        begin: '\('
+        end: '\)|{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - name: meta.type-parameters.parameter.rosetta
+          begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: variable.parameter.type-parameter.rosetta }
+          end: '(?=,|\))|{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#typeCall'
+          - include: '#documentation'
+
+      typeCall:
+        patterns:
+        - name: meta.type-call.rosetta
+          begin: '({{identifier}})(\()'
+          beginCaptures:
+            1: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
+            2: { name: punctuation.definition.arguments.begin.rosetta }
+          end: '(\))|{{sectionEnd}}'
+          endCaptures:
+            1: { name: punctuation.definition.arguments.end.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: meta.type-call.argument.rosetta
+            begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: variable.parameter.type-parameter.rosetta }
+            end: '{{expressionEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#expression'
+        - name: meta.type-call.rosetta
+          match: '{{identifier}}'
+          captures:
+            0: { name: entity.name.type.rosetta } # Need semantic tokens to specify type
+
+      rosettaMetaType:
+        name: meta.meta-type.rosetta
+        begin: '{{wordStart}}metaType{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.meta-type.rosetta keyword.declaration.meta-type.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: variable.other.member.meta.rosetta }
+          end: '{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#typeCall'
+
+      rosettaLibraryFunction:
+        name: meta.library-function.rosetta
+        begin: '{{wordStart}}library{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.library-function.rosetta keyword.declaration.library-function.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '{{wordStart}}function{{wordEnd}}'
+          beginCaptures:
+            0: { name: storage.type.library-function.rosetta keyword.declaration.library-function.rosetta }
+          end: '{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: entity.name.function.builtin.rosetta }
+            end: '{{rootEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#rosettaParameters'
+            - include: '#documentation'
+            - include: '#typeCall'
+
+      rosettaParameters:
+        name: meta.parameters.rosetta
+        begin: \(
+        beginCaptures:
+          0: { name: punctuation.definition.parameters.begin.rosetta }
+        end: (\))|{{rootEnd}}
+        endCaptures:
+          1: { name: punctuation.definition.parameters.end.rosetta }
+        patterns:
+        - include: '#comment'
+        - include: '#rosettaParameter'
+        - name: punctuation.separator.parameter.rosetta
+          match: ','
+
+      rosettaParameter:
+        name: meta.parameter.rosetta
+        begin: '{{identifier}}'
+        beginCaptures:
+          0: { name: variable.parameter.rosetta }
+        end: '(?=,|\))|{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - include: '#typeCall'
+
+      rosettaAnnotationSource:
+        name: meta.annotation-source.rosetta
+        begin: '{{wordStart}}(synonym|rule){{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '(?<=({{wordStart}}synonym{{wordEnd}})|({{wordStart}}rule{{wordEnd}}))' # used to be '(?<={{wordStart}}(synonym|rule){{wordEnd}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
+          end: (?=\{)|{{rootEnd}}
+          patterns:
+          - include: '#comment'
+          - name: keyword.other.source.rosetta
+            match: '{{wordStart}}source{{wordEnd}}'
+          - name: keyword.other.extends.rosetta
+            match: '{{wordStart}}extends{{wordEnd}}'
+          - name: entity.name.annotation-source.rosetta
+            match: '{{identifier}}'
+        - name: meta.annotation-source-body.rosetta
+          begin: (\{)
+          beginCaptures:
+            1: { name: punctuation.section.braces.begin.rosetta }
+          end: (\})|{{rootEnd}}
+          endCaptures:
+            1: { name: punctuation.section.braces.end.rosetta }
+          patterns:
+          - include: '#comment'
+          - begin: '{{wordStart}}enums{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.other.rosetta }
+            end: (?=\})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - include: '#colon'
+            - name: meta.annotation-source-enum-mapping.rosetta
+              begin: '{{identifier}}'
+              beginCaptures:
+                0: { name: entity.name.type.enum.rosetta }
+              end: (?={{identifier}}|\})|{{rootEnd}}
+              patterns:
+              - include: '#comment'
+              - include: '#annotation'
+              - name: meta.annotation-source-enum-value-mapping.rosetta
+                begin: '(\+|-)\s*({{identifier}})'
+                beginCaptures:
+                  1: { name: keyword.operator.annotation.rosetta }
+                  2: { name: variable.other.enummember.rosetta }
+                end: (?={{identifier}}|\}|\+|-)|{{rootEnd}}
+                patterns:
+                - include: '#comment'
+                - include: '#annotation'
+          - name: meta.annotation-source-type-mapping.rosetta
+            begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: entity.name.type.type.rosetta }
+            end: (?={{identifier}}|\})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - include: '#colon'
+            - include: '#annotation'
+            - name: meta.annotation-source-attribute-mapping.rosetta
+              begin: '(\+|-)\s*({{identifier}})'
+              beginCaptures:
+                1: { name: keyword.operator.annotation.rosetta }
+                2: { name: variable.other.member.rosetta }
+              end: (?={{identifier}}|\}|\+|-)|{{rootEnd}}
+              patterns:
+              - include: '#comment'
+              - include: '#annotation'
+
+      rosettaRule:
+        patterns:
+        - name: meta.rule.rosetta
+          begin: '{{wordStart}}(?:(reporting)|(eligibility)){{wordEnd}}\s*{{wordStart}}(rule){{wordEnd}}'
+          beginCaptures:
+            1: { name: storage.modifier.reporting.rosetta keyword.other.reporting.rosetta }
+            2: { name: storage.modifier.eligibility.rosetta keyword.other.eligibility.rosetta }
+            3: { name: storage.type.rule.rosetta keyword.declaration.rule.rosetta }
+          end: '{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: entity.name.rule.rosetta }
+            end: '{{rootEnd}}'
+            patterns:
+            - include: '#comment'
+            - begin: '{{wordStart}}from{{wordEnd}}'
+              beginCaptures:
+                0: { name: keyword.other.from.rosetta }
+              end: '(?=:)|{{rootEnd}}'
+              patterns:
+              - include: '#comment'
+              - include: '#typeCall'
+            - include: '#colon'
+            - include: '#documentation'
+            - include: '#annotation'
+            - include: '#expression'
+        - name: meta.rule.rosetta
+          match: '{{wordStart}}(?:(reporting)|(eligibility)){{wordEnd}}'
+          captures:
+            1: { name: storage.modifier.reporting.rosetta keyword.other.reporting.rosetta }
+            2: { name: storage.modifier.eligibility.rosetta keyword.other.eligibility.rosetta }
+
+      rosettaReport:
+        name: meta.report.rosetta
+        begin: '{{wordStart}}report{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.report.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: (?<={{wordStart}}report{{wordEnd}})
+          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          patterns:
+          - include: '#comment'
+          - begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: entity.name.document.body.rosetta }
+            end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - name: entity.name.document.corpus.rosetta
+              match: '{{identifier}}'
+        - begin: '{{wordStart}}in{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.other.in.rosetta }
+          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          patterns:
+          - include: '#comment'
+          - name: constant.language.timing.rosetta
+            match: '{{wordStart}}(real\-time|T\+[1-5]|ASATP){{wordEnd}}'
+        - begin: '{{wordStart}}from{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.other.from.rosetta }
+          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          patterns:
+          - include: '#comment'
+          - include: '#typeCall'
+        - begin: '{{wordStart}}when{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.other.when.rosetta }
+          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          patterns:
+          - include: '#comment'
+          - name: keyword.other.and.rosetta
+            match: '{{wordStart}}and{{wordEnd}}'
+          - name: entity.name.rule.rosetta
+            match: '{{identifier}}'
+        - begin: '{{wordStart}}using{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.other.using.rosetta }
+          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          patterns:
+          - include: '#comment'
+          - name: keyword.other.standard.rosetta
+            match: '{{wordStart}}standard{{wordEnd}}'
+          - name: entity.name.document.corpus.rosetta
+            match: '{{identifier}}'
+        - begin: '{{wordStart}}with{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.other.with.rosetta }
+          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          patterns:
+          - include: '#comment'
+          - begin: '{{wordStart}}type{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.other.type.rosetta }
+            end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - name: entity.name.type.type.rosetta
+              match: '{{identifier}}'
+            - name: punctuation.separator.dot.rosetta
+              match: \.
+          - begin: '{{wordStart}}source{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.other.source.rosetta }
+            end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+            patterns:
+            - include: '#comment'
+            - name: entity.name.annotation-source.rosetta
+              match: '{{identifier}}'
+            - name: punctuation.separator.dot.rosetta
+              match: \.
+
+      annotationDeclaration:
+        name: meta.annotation.rosetta
+        begin: '{{wordStart}}annotation{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.annotation.rosetta keyword.declaration.annotation.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: variable.annotation.rosetta }
+          end: '{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#documentation'
+          - include: '#annotation'
+          - include: '#colon'
+          - include: '#memberAttribute'
+
+      annotation:
+        name: meta.annotated.rosetta
+        begin: (\[)
+        beginCaptures:
+          1: { name: punctuation.annotation.begin.rosetta }
+        end: (\])|{{unambiguousRootEnd}}
+        endCaptures:
+          1: { name: punctuation.annotation.end.rosetta }
+        patterns:
+        - include: '#comment'
+        - include: '#prefixAnnotationBody'
+        - include: '#synonymAnnotationBody'
+        - include: '#referenceAnnotationBody'
+        - include: '#ruleReferenceAnnotationBody'
+        - include: '#labelAnnotationBody'
+        - include: '#customAnnotationBody'
+
+      prefixAnnotationBody:
+        name: meta.annotated.prefix.rosetta
+        begin: '{{wordStart}}prefix{{wordEnd}}'
+        beginCaptures:
+          0: { name: variable.annotation.prefix.rosetta }
+        end: (?=\])|{{sectionEnd}}
+        patterns:
+        - include: '#comment'
+        - name: entity.name.function.rosetta
+          match: '{{identifier}}'
+
+      synonymAnnotationBody: # TODO: highlight `path` and `dateFormat` strings differently
+        name: meta.annotated.synonym.rosetta
+        begin: '{{wordStart}}(synonym){{wordEnd}}|(?={{synonymAnnotationSection}})'
+        beginCaptures:
+          1: { name: variable.annotation.synonym.rosetta }
+        end: (?=\])|{{rootEnd}}
+        patterns:
+        - include: '#comment'
+        - name: meta.annotated.synonym.synonym-section.rosetta
+          begin: '(?<={{wordStart}}synonym{{wordEnd}})'
+          end: '{{synonymAnnotationSectionEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#comma'
+          - name: punctuation.separator.dot.rosetta
+            match: '.'
+          - name: entity.name.synonym-source.rosetta
+            match: '{{identifier}}'
+        - name: meta.annotated.synonym.simple-section.rosetta
+          begin: '{{synonymAnnotationSimpleSection}}'
+          beginCaptures:
+            0: { name: keyword.other.rosetta }
+          end: '{{synonymAnnotationSectionEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#synonymValue'
+          - include: '#synonymMapping'
+          - include: '#comma'
+        - name: meta.annotated.synonym.set-section.rosetta
+          begin: '(?={{wordStart}}set{{wordEnd}})'
+          beginCaptures:
+            0: { name: keyword.other.rosetta }
+          end: '(?!{{wordStart}}set{{wordEnd}}){{synonymAnnotationSectionEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#synonymValue'
+          - include: '#synonymMapping'
+          - include: '#comma'
+
+      synonymValue: # includes RosettaSynonymValue, RosettaClassSynonymValue, RosettaMetaSynonymValue and RosettaMergeSynonymValue
+        patterns:
+        - include: '#comment'
+        - include: '#string'
+        - include: '#integer'
+        - include: '#comma'
+        - name: constant.language.rosetta
+          match: '{{wordStart}}(tag|componentID){{wordEnd}}'
+        - name: keyword.other.rosetta
+          match: '{{wordStart}}(when|path|maps){{wordEnd}}'
+        - name: keyword.operator.rosetta
+          match: '<>'
+
+      synonymMapping: # TODO: improve
+        patterns:
+        - include: '#comment'
+        - include: '#literal'
+        - include: '#comma'
+        - begin: '{{wordStart}}(set|default){{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.other.rosetta }
+          end: '(?=,)|{{synonymAnnotationSectionEnd}}'
+          patterns:
+          - include: '#comment'
+          - name: keyword.other.rosetta
+            match: '{{wordStart}}(when|condition-func|condition-path|to|path|rosettaPath|and){{wordEnd}}'
+          - name: keyword.operator.word.rosetta
+            match: '{{wordStart}}(exists|is|absent){{wordEnd}}'
+          - name: keyword.operator.rosetta
+            match: '{{wordStart}}(=|<>){{wordEnd}}'
+          - include: '#literal'
+
+      referenceAnnotationBody:
+        name: meta.annotated.document.rosetta
+        begin: '{{wordStart}}(regulatoryReference|docReference){{wordEnd}}'
+        beginCaptures:
+          1: { name: variable.annotation.doc-reference.rosetta }
+        end: (?=\])|{{sectionEnd}}
+        patterns:
+        - include: '#comment'
+        - name: meta.annotated.document.document-id.rosetta
+          begin: '(?<={{wordStart}}regulatoryReference{{wordEnd}}|{{wordStart}}docReference{{wordEnd}})' # used to be '(?<={{wordStart}}(regulatoryReference|docReference){{wordEnd}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
+          end: '{{docReferenceAnnotationSectionEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#annotationPath'
+          - begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: entity.name.document.body.rosetta }
+            end: '{{docReferenceAnnotationSectionEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#string'
+            - name: entity.name.document.rosetta # need semantic tokens to distinguish between corpus and segment
+              match: '{{identifier}}'
+        - name: keyword.other.rosetta
+          match: '{{docReferenceAnnotationSection}}'
+        - include: '#string'
+
+      ruleReferenceAnnotationBody:
+        name: meta.annotated.rule.rosetta
+        begin: '{{wordStart}}ruleReference{{wordEnd}}'
+        beginCaptures:
+          0: { name: variable.annotation.rule-reference.rosetta }
+        end: (?=\])|{{sectionEnd}}
+        patterns:
+        - include: '#comment'
+        - include: '#annotationPath'
+        - name: entity.name.rule.rosetta
+          match: '{{identifier}}'
+
+      labelAnnotationBody:
+        name: meta.annotated.label.rosetta
+        begin: '{{wordStart}}label{{wordEnd}}'
+        beginCaptures:
+          0: { name: variable.annotation.label.rosetta }
+        end: (?=\])|{{sectionEnd}}
+        patterns:
+        - include: '#comment'
+        - include: '#annotationPath'
+        - include: '#string'
+
+      annotationPath:
+        name: meta.annotated.path.rosetta
+        begin: '({{wordStart}}for{{wordEnd}})\s*(?:({{identifier}})|({{wordStart}}item{{wordEnd}}))'
+        beginCaptures:
+          1: { name: keyword.other.rosetta }
+          2: { name: variable.other.member.rosetta }
+          3: { name: constant.language.rosetta }
+        end: '(?!\s|->)|(?=\])|{{sectionEnd}}'
+        patterns:
+        - include: '#comment'
+        - match: (->|->>)\s*({{identifier}})
+          captures:
+            1: { name: keyword.operator.rosetta }
+            2: { name: variable.other.member.rosetta }
+
+      customAnnotationBody:
+        name: meta.annotated.rosetta
+        begin: '{{identifier}}'
+        beginCaptures:
+          0: { name: variable.annotation.rosetta }
+        end: (?=\])|{{sectionEnd}}
+        patterns:
+        - include: '#comment'
+        - begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: variable.other.member.rosetta } # need semantic tokens for meta members
+          end: (?=\])|{{sectionEnd}}
+          patterns:
+          - include: '#comment'
+          - include: '#string'
+          - name: keyword.operator.rosetta
+            match: '='
+          - begin: ->
+            beginCaptures:
+              0: { name: keyword.operator.rosetta }
+            end: '{{identifier}}'
+            endCaptures:
+              0: { name: variable.other.member.rosetta }
+            patterns:
+            - include: '#comment'
+          - name: entity.name.type.type.rosetta
+            match: '{{identifier}}'
+
+      memberAttribute: # TODO: improve (nested patterns? First consume attribute, then start consuming annotations until the next identifier)
+        patterns:
+        - include: '#comment'
+        - include: '#annotation'
+        - include: '#documentation'
+        - name: keyword.other.override.rosetta
+          match: '{{wordStart}}override{{wordEnd}}'
+        - name: meta.attribute.rosetta
+          begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: variable.other.member.rosetta }
+          end: '(?<=\))|{{sectionEnd}}'
+          patterns:
+          - include: '#attributeType'
+
+      inputAttribute:
+        patterns:
+        - include: '#comment'
+        - include: '#annotation'
+        - include: '#documentation'
+        - name: keyword.other.override.rosetta
+          match: '{{wordStart}}override{{wordEnd}}'
+        - name: meta.attribute.rosetta
+          begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: variable.parameter.input.rosetta }
+          end: '(?<=\))|{{sectionEnd}}'
+          patterns:
+          - include: '#attributeType'
+
+      outputAttribute:
+        patterns:
+        - include: '#comment'
+        - include: '#annotation'
+        - include: '#documentation'
+        - name: keyword.other.override.rosetta
+          match: '{{wordStart}}override{{wordEnd}}'
+        - name: meta.attribute.rosetta
+          begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: variable.parameter.output.rosetta }
+          end: '(?<=\))|{{sectionEnd}}'
+          patterns:
+          - include: '#attributeType'
+
+      attributeType:
+        patterns:
+        - include: '#comment'
+        - include: '#typeCall'
+        - name: punctuation.separator.dot.rosetta
+          match: \.
+        - include: '#cardinalityConstraint'
+
+      cardinalityConstraint:
+        name: meta.cardinality.rosetta
+        match: (\()(\d+)?(\.\.)?(?:(\d+)|(\*))?(\))?
+        captures:
+          1: { name: punctuation.definition.cardinality.begin.rosetta }
+          2: { name: constant.numeric.integer.decimal.rosetta }
+          3: { name: punctuation.separator.dotdot.rosetta }
+          4: { name: constant.numeric.integer.decimal.rosetta }
+          5: { name: constant.language.unbounded.rosetta }
+          6: { name: punctuation.definition.cardinality.end.rosetta }
+
+      enumerationDeclaration:
+        name: meta.enum.rosetta
+        begin: '{{wordStart}}enum{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.enum.rosetta keyword.declaration.enum.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - begin: (?<={{wordStart}}enum{{wordEnd}})
+          end: (:)|{{rootEnd}}
+          endCaptures:
+            1: { name: punctuation.separator.colon.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: storage.modifier.extends.rosetta keyword.other.extends.rosetta
+            match: '{{wordStart}}extends{{wordEnd}}'
+          - name: entity.name.type.enum.rosetta
+            match: '{{identifier}}'
+          - name: punctuation.separator.dot.rosetta
+            match: \.
+        - include: '#comment'
+        - include: '#documentation'
+        - include: '#annotation'
+        - name: keyword.other.display-name.rosetta
+          match: '{{wordStart}}displayName{{wordEnd}}'
+        - include: '#string'
+        - name: variable.other.enummember.rosetta
+          match: '{{identifier}}'
+
+      typeDeclaration:
+        name: meta.type.rosetta
+        begin: '{{wordStart}}type{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.type.rosetta keyword.declaration.type.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - begin: (?<={{wordStart}}type{{wordEnd}})
+          end: (:)|{{rootEnd}}
+          endCaptures:
+            1: { name: punctuation.separator.colon.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: storage.modifier.extends.rosetta keyword.other.extends.rosetta
+            match: '{{wordStart}}extends{{wordEnd}}'
+          - name: entity.name.type.type.rosetta
+            match: '{{identifier}}'
+          - name: punctuation.separator.dot.rosetta
+            match: \.
+        - include: '#comment'
+        - include: '#documentation'
+        - include: '#annotation'
+        - include: '#condition'
+        - include: '#memberAttribute'
+
+      condition:
+        name: meta.condition.rosetta
+        begin: '{{wordStart}}(post\-condition){{wordEnd}}|{{wordStart}}(condition){{wordEnd}}(?=\s*({{identifier}})?:)'
+        beginCaptures:
+          1: { name: keyword.declaration.post-condition.rosetta }
+          2: { name: keyword.declaration.condition.rosetta }
+        end: '{{sectionEnd}}'
+        patterns:
+        - begin: (?<=condition{{wordEnd}})
+          end: (:)|{{sectionEnd}}
+          endCaptures:
+            1: { name: punctuation.separator.colon.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: entity.name.condition.rosetta
+            match: '{{identifier}}'
+        - include: '#comment'
+        - include: '#documentationAndAnnotationsFollowedByExpression'
+      
+      choiceDeclaration:
+        name: meta.choice.rosetta
+        begin: '{{wordStart}}choice{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.choice.rosetta keyword.declaration.type.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - begin: (?<={{wordStart}}choice{{wordEnd}})
+          end: (:)|{{rootEnd}}
+          endCaptures:
+            1: { name: punctuation.separator.colon.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: entity.name.type.choice.rosetta
+            match: '{{identifier}}'
+          - name: punctuation.separator.dot.rosetta
+            match: \.
+        - include: '#comment'
+        - include: '#documentation'
+        - include: '#annotation'
+        - include: '#choiceOption'
+      
+      choiceOption:
+        patterns:
+        - include: '#typeCall'
+
+      functionDeclaration:
+        name: meta.function.rosetta
+        begin: '{{wordStart}}func{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.function.rosetta keyword.declaration.function.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - begin: (?<={{wordStart}}func{{wordEnd}})
+          end: (:)|{{rootEnd}}
+          endCaptures:
+            1: { name: punctuation.separator.colon.rosetta }
+          patterns:
+          - include: '#comment'
+          - begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: entity.name.function.rosetta }
+            end: '(?=:)|{{rootEnd}}'
+            patterns:
+            - include: '#comment'
+            - name: meta.extends.rosetta
+              begin: '{{wordStart}}(extends){{wordEnd}}'
+              beginCaptures:
+                0: { name: keyword.other.extends.rosetta }
+              end: (?=:)|{{rootEnd}}
+              patterns:
+              - include: '#comment'
+              - name: entity.name.function.rosetta
+                match: '{{identifier}}'
+            - name: meta.dispatch.rosetta
+              begin: \(
+              beginCaptures:
+                0: { name: punctuation.definition.dispatch.begin.rosetta }
+              end: (\))|(?=:)|{{rootEnd}}
+              endCaptures:
+                1: { name: punctuation.definition.dispatch.end.rosetta }
+              patterns:
+              - begin: (?<=\()
+                end: (:)|(?=\))|{{rootEnd}}
+                endCaptures:
+                  0: { name: punctuation.separator.colon.rosetta }
+                patterns:
+                - include: '#comment'
+                - name: variable.parameter.input.rosetta
+                  match: '{{identifier}}'
+              - begin: (?<=:)
+                end: (?=\))|(?=:)|{{rootEnd}}
+                patterns:
+                - include: '#comment'
+                - name: entity.name.type.enum.rosetta
+                  match: '{{identifier}}'
+                - begin: ->
+                  beginCaptures:
+                    0: { name: punctuation.accessor.rosetta }
+                  end: (?=\))|(?=:)|{{rootEnd}}
+                  patterns:
+                  - include: '#comment'
+                  - name: variable.other.enummember.rosetta
+                    match: '{{identifier}}'
+        - include: '#comment'
+        - include: '#documentation'
+        - include: '#annotation'
+        - include: '#condition'
+        - include: '#inputs'
+        - include: '#output'
+        - include: '#alias'
+        - include: '#operation'
+
+      inputs:
+        name: meta.inputs.rosetta
+        begin: '{{wordStart}}inputs{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.inputs.rosetta }
+        end: '{{sectionEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: ':'
+          beginCaptures:
+            0: { name: punctuation.separator.colon.rosetta }
+          end: '{{sectionEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#inputAttribute'
+
+      output:
+        name: meta.output.rosetta
+        begin: '{{wordStart}}output{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.output.rosetta }
+        end: '{{sectionEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: ':'
+          beginCaptures:
+            0: { name: punctuation.separator.colon.rosetta }
+          end: '{{sectionEnd}}'
+          patterns:
+          - include: '#comment'
+          - include: '#outputAttribute'
+
+      alias:
+        name: meta.alias.rosetta
+        begin: '{{wordStart}}alias{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.declaration.alias.rosetta }
+        end: '{{sectionEnd}}'
+        patterns:
+        - begin: (?<=alias)
+          end: (:)|{{sectionEnd}}
+          endCaptures:
+            0: { name: punctuation.separator.colon.rosetta }
+          patterns:
+          - include: '#comment'
+          - name: variable.other.alias.rosetta
+            match: '{{identifier}}'
+        - include: '#comment'
+        - include: '#documentationFollowedByExpression'
+
+      operation:
+        name: meta.operation.rosetta
+        begin: '{{wordStart}}(?:(set)|(add)){{wordEnd}}'
+        beginCaptures:
+          1: { name: keyword.other.set.rosetta }
+          2: { name: keyword.other.add.rosetta }
+        end: '{{sectionEnd}}'
+        patterns:
+        - name: meta.operation.attribute.rosetta
+          begin: (?<={{wordStart}}(set|add){{wordEnd}})
+          end: (:)|{{sectionEnd}}
+          endCaptures:
+            1: { name: punctuation.separator.colon.rosetta }
+          patterns:
+          - include: '#comment'
+          - begin: '{{identifier}}'
+            beginCaptures:
+              0: { name: variable.parameter.output.rosetta }
+            end: (?=:)|{{sectionEnd}}
+            patterns:
+            - include: '#comment'
+            - name: punctuation.accessor.rosetta
+              match: ->
+            - name: variable.other.member.rosetta
+              match: '{{identifier}}'
+        - include: '#comment'
+        - include: '#documentationFollowedByExpression'
+      
+      expression:
+        patterns:
+        - include: '#parameterizedExpression'
+          arguments:
+            extraEnd: ''
+      
+      expressionWithoutThenOperation:
+        patterns:
+        - include: '#parameterizedExpression'
+          arguments:
+            extraEnd: '(?={{wordStart}}then{{wordEnd}})|'
+      
+      expressionWithoutThenAndDefaultOperation:
+        patterns:
+        - include: '#parameterizedExpression'
+          arguments:
+            extraEnd: '(?={{wordStart}}then|default{{wordEnd}})|'
+
+      parameterizedExpression:
+        parameters: ['extraEnd']
+        name: meta.expression.rosetta
+        begin: (?!,|\s|^|$)
+        end: '{{extraEnd}}{{expressionEnd}}'
+        patterns:
+        - include: '#comment'
+        - name: meta.parens.rosetta
+          begin: (\()
+          beginCaptures:
+            1: { name: punctuation.group.begin.rosetta }
+          end: (\))|({{sectionEnd}})
+          endCaptures:
+            1: { name: punctuation.group.end.rosetta }
+          patterns:
+          - include: '#expression'
+          - include: '#comma'
+        - name: meta.list.rosetta
+          begin: (\[)
+          beginCaptures:
+            1: { name: punctuation.list.begin.rosetta }
+          end: (\])|({{expressionEndIgnoringComma}})
+          endCaptures:
+            1: { name: punctuation.list.end.rosetta }
+          patterns:
+          - include: '#expression'
+          - include: '#comma'
+        - include: '#constructorExpression'
+        - name: meta.functional-operation.rosetta
+          begin: '{{functionalOperation}}'
+          beginCaptures:
+            0: { name: keyword.operator.word.rosetta }
+          end: '{{functionalOperationEnd}}'
+          patterns:
+          - include: '#comment'
+          - begin: (\[)
+            beginCaptures:
+              1: { name: punctuation.definition.inline-function.begin.rosetta }
+            end: (\])
+            endCaptures:
+              1: { name: punctuation.definition.inline-function.end.rosetta }
+            patterns:
+            - include: '#comment'
+            - include: '#expression'
+          - include: '#{{this}}'
+        - name: meta.then-operation.rosetta
+          begin: '{{wordStart}}then{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.operator.word.rosetta }
+          end: (?=\])|(?={{wordStart}}(then){{wordEnd}})|{{extraEnd}}{{expressionEnd}}
+          patterns:
+          - include: '#comment'
+          - begin: \[
+            beginCaptures:
+              0: { name: punctuation.definition.inline-function.begin.rosetta }
+            end: \]|({{expressionEnd}})
+            patterns:
+            - include: '#comment'
+            - include: '#expression'
+          - include: '#expression'
+        - name: meta.deep-projection.rosetta
+          begin: ->>
+          beginCaptures:
+            0: { name: keyword.operator.rosetta }
+          end: '{{identifier}}'
+          endCaptures:
+            0: { name: variable.other.rosetta } # Need semantic tokens for meta members
+          patterns:
+          - include: '#comment'
+        - name: meta.projection.rosetta
+          begin: ->
+          beginCaptures:
+            0: { name: keyword.operator.rosetta }
+          end: '{{identifier}}'
+          endCaptures:
+            0: { name: variable.other.rosetta } # Need semantic tokens for meta and to see whether it is an enummember or a regular member
+          patterns:
+          - include: '#comment'
+        - include: '#literal'
+        - include: '#implicitVariable'
+        - name: meta.if-then.rosetta
+          begin: '{{wordStart}}if{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.control.conditional.if.rosetta }
+          end: '{{wordStart}}(then){{wordEnd}}|{{extraEnd}}{{expressionEnd}}'
+          endCaptures:
+            1: { name: keyword.control.conditional.then.rosetta }
+          patterns:
+          - include: '#comment'
+          - include: '#expressionWithoutThenOperation'
+        - name: keyword.control.conditional.else.rosetta
+          match: '{{wordStart}}else{{wordEnd}}'
+        - begin: '{{wordStart}}(optional|required){{wordEnd}}\s+({{wordStart}}choice{{wordEnd}})?'
+          beginCaptures:
+            1: { name: keyword.operator.word.rosetta }
+            2: { name: keyword.operator.word.rosetta }
+          end: '{{extraEnd}}{{expressionEndIgnoringComma}}'
+          patterns:
+          - name: variable.other.member.rosetta
+            match: '{{identifier}}'
+          - name: punctuation.separator.member.rosetta
+            match: ','
+        - name: meta.to-enum.rosetta
+          begin: '{{wordStart}}to-enum{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.operator.word.rosetta }
+          end: '{{qualifiedIdentifier}}'
+          endCaptures:
+            0: { name: entity.name.type.enum.rosetta }
+          patterns:
+          - include: '#comment'
+        - name: meta.switch-operation.rosetta
+          begin: '{{wordStart}}switch{{wordEnd}}'
+          beginCaptures:
+            0: { name: keyword.control.conditional.switch.rosetta }
+          end: '{{extraEnd}}{{expressionEndIgnoringComma}}'
+          patterns:
+          - include: '#comment'
+          - begin: '{{wordStart}}then{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.control.conditional.then.rosetta }
+            end: '{{expressionEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#expression'
+          - begin: '{{wordStart}}default{{wordEnd}}'
+            beginCaptures:
+              0: { name: keyword.control.conditional.default.rosetta }
+            end: '{{expressionEnd}}'
+            patterns:
+            - include: '#comment'
+            - include: '#expression'
+          - include: '#expressionWithoutThenAndDefaultOperation'
+        - name: keyword.operator.word.rosetta
+          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as(?!-)|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|with-meta){{wordEnd}}'
+        - name: keyword.operator.word.super.rosetta
+          match: '{{wordStart}}super{{wordEnd}}'
+        - name: keyword.operator.rosetta
+          match: =|<>|>=|<=|>|<|\+|-|\*|\/
+        - name: variable.rosetta # Need semantic tokens to specify variable
+          match: '{{identifier}}'
+
+      implicitVariable:
+        name: constant.language.rosetta
+        match: '{{wordStart}}item{{wordEnd}}'
+
+      constructorExpression:
+        name: meta.constructor.rosetta
+        begin: (\{)
+        beginCaptures:
+          1: { name: punctuation.constructor.begin.rosetta }
+        end: (\})|({{expressionEndIgnoringComma}})
+        endCaptures:
+          1: { name: punctuation.constructor.end.rosetta }
+        patterns:
+        - include: '#comment'
+        - name: meta.constructor.key-value.rosetta
+          begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: variable.other.member.output.rosetta }
+          end: (?=,|\})|({{expressionEnd}})
+          patterns:
+          - include: '#comment'
+          - include: '#colon'
+          - include: '#expression'
+        - include: '#comma'
+        - name: keyword.other.triple-dot.rosetta
+          match: '\.\.\.'
+
+      literal:
+        patterns:
+        - include: '#string'
+        - include: '#number'
+        - name: constant.language.rosetta
+          match: '{{wordStart}}(True|False|empty){{wordEnd}}'
+
+      documentationAndAnnotationsFollowedByExpression: # Special rule to circumvent clashing of '[' and '<' in expressions
+        name: meta.documentation-and-annotations-followed-by-expression.rosetta
+        begin: (?!\s|^|$)
+        end: '{{sectionEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: (?=<)
+          end: '{{sectionEnd}}'
+          patterns:
+          - name: comment.block.documentation.rosetta
+            begin: (<)
+            beginCaptures:
+              1: { name: punctuation.definition.documentation.begin.rosetta }
+            end: (>)|{{sectionEnd}}
+            endCaptures:
+              1: { name: punctuation.definition.documentation.end.rosetta }
+            patterns:
+            - include: '#comment'
+            - include: '#string'
+          - include: '#annotationsFollowedByExpression'
+        - include: '#annotationsFollowedByExpression'
+
+      documentationFollowedByExpression:
+        name: meta.documentation-followed-by-expression.rosetta
+        begin: (?!\s|^|$)
+        end: '{{sectionEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: (?=<)
+          end: '{{sectionEnd}}'
+          patterns:
+          - name: comment.block.documentation.rosetta
+            begin: (<)
+            beginCaptures:
+              1: { name: punctuation.definition.documentation.begin.rosetta }
+            end: (>)|{{sectionEnd}}
+            endCaptures:
+              1: { name: punctuation.definition.documentation.end.rosetta }
+            patterns:
+            - include: '#comment'
+            - include: '#string'
+          - include: '#expression'
+        - include: '#expression'
+
+      annotationsFollowedByExpression:
+        name: meta.annotations-followed-by-expression.rosetta
+        begin: (?!\s|^|$)
+        end: '{{sectionEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: (?=\[)
+          end: '{{sectionEnd}}'
+          patterns:
+          - name: meta.annotated.rosetta
+            begin: (\[)
+            beginCaptures:
+              1: { name: punctuation.annotation.begin.rosetta }
+            end: (\])|{{sectionEnd}}
+            endCaptures:
+              1: { name: punctuation.annotation.end.rosetta }
+            patterns:
+            - include: '#comment'
+            - include: '#prefixAnnotationBody'
+            - include: '#synonymAnnotationBody'
+            - include: '#referenceAnnotationBody'
+            - include: '#ruleReferenceAnnotationBody'
+            - include: '#labelAnnotationBody'
+            - include: '#customAnnotationBody'
+          - include: '#annotationsFollowedByExpression'
+        - include: '#expression'
+
+  string:
+    patterns:
+    - include: '#doubleQuotedString'
+    - include: '#singleQuotedString'
+    repository:
+      doubleQuotedString:
+        name: string.quoted.double.rosetta
+        begin: (")
+        beginCaptures:
+          1: { name: punctuation.definition.string.begin.rosetta }
+        end: (")
+        endCaptures:
+          1: { name: punctuation.definition.string.end.rosetta }
+        patterns:
+        - include: '#stringCharacterEscape'
+      singleQuotedString:
+        name: string.quoted.single.rosetta
+        begin: (')
+        beginCaptures:
+          1: { name: punctuation.definition.string.begin.rosetta }
+        end: (')
+        endCaptures:
+          1: { name: punctuation.definition.string.end.rosetta }
+        patterns:
+        - include: '#stringCharacterEscape'
+      stringCharacterEscape:
+        name: constant.character.escape.rosetta
+        match: \\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\{[0-9A-Fa-f]+\}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)
+
+  number:
+    patterns:
+    - include: '#float'
+    - include: '#integer'
+    repository:
+      integer:
+        name: constant.numeric.integer.decimal.rosetta
+        match: '[+-]?\d+'
+      float:
+        name: constant.numeric.float.decimal.rosetta
+        match: '[+-]?(\d+(\.\d*)?|\.\d+)([Ee][+-]?\d+)?'
+
+  documentation:
+    name: comment.block.documentation.rosetta
+    begin: (<)
+    beginCaptures:
+      1: { name: punctuation.definition.documentation.begin.rosetta }
+    end: (>)
+    endCaptures:
+      1: { name: punctuation.definition.documentation.end.rosetta }
+    patterns:
+    - include: '#string'
+
+  comment:
+    patterns:
+    - include: '#lineComment'
+    - include: '#blockComment'
+    repository:
+      lineComment:
+        name: comment.line.rosetta
+        match: (//).*
+        captures:
+          1: { name: punctuation.definition.comment.rosetta }
+      blockComment:
+        name: comment.block.rosetta
+        begin: /\*
+        beginCaptures:
+          0: { name: punctuation.definition.comment.begin.rosetta }
+        end: \*/
+        endCaptures:
+          0: { name: punctuation.definition.comment.end.rosetta }
+
+  colon:
+    name: punctuation.separator.colon.rosetta
+    match: ':'
+  
+  comma:
+    name: punctuation.separator.comma.rosetta
+    match: ','

@@ -1,0 +1,12 @@
+{
+  "@model" : "serialization",
+  "@type" : "serialization.test.passing.metakey.Root",
+  "@version" : "0.0.0",
+  "nodeRef" : {
+    "typeA" : {
+      "@key": "someKey",
+      "@key:external" : "someExternalKey",
+      "fieldA" : "foo"
+    }
+  }
+}

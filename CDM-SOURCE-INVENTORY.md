@@ -3,8 +3,8 @@
 ## Complete Index of All Official CDM Information Sources
 
 **Last Updated:** December 7, 2025
-**Total Files:** 30+ documents + 2 repositories
-**Total Size:** ~50MB (excluding finos-cdm repository)
+**Total Files:** 30+ documents + 12 repositories (~6,200 files)
+**Total Size:** ~100MB
 
 ---
 
@@ -19,8 +19,19 @@
 │   ├── icma/            (13 files)
 │   └── isla/            (1 file)
 ├── tier2-technology/
-│   └── regnosys-rosetta/
-│       └── rosetta-dsl/ (~900 files - cloned repo)
+│   ├── regnosys-rosetta/
+│   │   ├── rosetta-dsl/           (889 files - original DSL)
+│   │   ├── rune-dsl/              (889 files - current DSL)
+│   │   ├── rosetta-code-generators/ (384 files - code generators)
+│   │   ├── rune-docs/             (44 files - documentation)
+│   │   ├── cdm-object-builder/    (159 files - CDM utilities)
+│   │   ├── cdm-starter/           (10 files - starter project)
+│   │   ├── rune-testing/          (359 files - testing utilities)
+│   │   ├── rune-python-generator/ (127 files - Python generator)
+│   │   ├── rune-python-runtime/   (55 files - Python runtime)
+│   │   └── rune-common/           (333 files - common utilities)
+│   └── finos-rune/
+│       └── rune-dsl/              (889 files - FINOS canonical version)
 ├── tier3-training/
 │   └── linux-foundation/ (1 file)
 ├── tier4-regulatory/
@@ -115,22 +126,38 @@
 
 ## Tier 2: Technology Partners
 
-### REGnosys / Rosetta (Repository)
+### REGnosys Repositories (10 repos, 3,249 files)
 
-| Resource | Description |
-|----------|-------------|
-| rosetta-dsl/ | Complete Rosetta DSL repository (cloned from GitHub) |
+| Repository | Files | Description |
+|------------|-------|-------------|
+| **rosetta-dsl** | 889 | Original Rosetta DSL grammar and generators |
+| **rune-dsl** | 889 | Current Rune DSL (successor to Rosetta) |
+| **rosetta-code-generators** | 384 | Multi-language code generators |
+| **rune-docs** | 44 | Official Rune DSL documentation |
+| **cdm-object-builder** | 159 | CDM object builder utility |
+| **cdm-starter** | 10 | Java-based CDM starter project |
+| **rune-testing** | 359 | Testing utility library |
+| **rune-python-generator** | 127 | Python code generation from Rune DSL |
+| **rune-python-runtime** | 55 | Python runtime support |
+| **rune-common** | 333 | Common utilities (forked from FINOS) |
 
-**Contents:**
-- Rosetta DSL language definition
-- Code generators
-- Documentation
-- Examples
+**Key Documentation Files:**
+- `rune-docs/` - Complete DSL documentation
+- `rosetta-code-generators/README.md` - Code generator guide
+- `cdm-starter/README.md` - Getting started guide
 
 **Source URLs:**
-- GitHub: https://github.com/REGnosys/rosetta-dsl
+- GitHub Organization: https://github.com/REGnosys
 - Documentation: https://docs.rosetta-technology.io/
 - CDM Portal: https://portal.cdm.rosetta-technology.io/
+
+### FINOS Rune DSL (1 repo, 889 files)
+
+| Repository | Files | Description |
+|------------|-------|-------------|
+| **rune-dsl** | 889 | Canonical open-source Rune DSL (contributed by REGnosys) |
+
+**Source URL:** https://github.com/finos/rune-dsl
 
 ---
 
@@ -285,11 +312,29 @@
 |----------|-------|
 | **Total Tier 1-7 Documents** | 30 |
 | **FINOS CDM Repository Files** | 2,953 |
-| **Rosetta DSL Repository Files** | ~500 |
+| **REGnosys Repository Files** | 3,249 |
+| **FINOS Rune DSL Files** | 889 |
+| **Total Repository Files** | ~6,200 |
 | **PDF Documents** | 25 |
 | **Presentations (PPTX/PDF)** | 10 |
 | **HTML Articles** | 2 |
-| **Markdown Documentation** | 3 |
+| **Markdown Documentation** | 50+ |
+
+### REGnosys Repository Breakdown
+
+| Repository | Files | Purpose |
+|------------|-------|---------|
+| rosetta-dsl | 889 | Original DSL grammar |
+| rune-dsl (REGnosys) | 889 | Current DSL grammar |
+| rune-dsl (FINOS) | 889 | Canonical open-source version |
+| rosetta-code-generators | 384 | Java, Scala, DAML generators |
+| rune-testing | 359 | Testing utilities |
+| rune-common | 333 | Common libraries |
+| cdm-object-builder | 159 | CDM builder utilities |
+| rune-python-generator | 127 | Python code generation |
+| rune-python-runtime | 55 | Python runtime |
+| rune-docs | 44 | DSL documentation |
+| cdm-starter | 10 | Starter project |
 
 ---
 
