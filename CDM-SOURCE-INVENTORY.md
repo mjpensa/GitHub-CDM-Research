@@ -16,6 +16,8 @@
 │   ├── finos/           (4 PDF files)
 │   ├── finos-cdm/       (2,953 files - complete FINOS CDM repo)
 │   ├── isda/            (20 files)
+│   │   ├── cdm-specific/     (10 files - directly reference CDM/DRR)
+│   │   └── industry-context/ (10 files - broader derivatives/collateral industry)
 │   ├── icma/            (13 files)
 │   └── isla/            (1 file)
 ├── tier2-technology/
@@ -70,27 +72,38 @@
 
 ### ISDA (20 files)
 
+#### CDM-Specific Documents (10 files)
+
+Documents that directly reference, explain, or announce CDM and DRR:
+
 | File | Description | Size |
 |------|-------------|------|
 | CDM-Overview-Oct-2023.pptx | ISDA CDM presentation | 9.0MB |
 | ISDA-CDM-Factsheet.pdf | General CDM factsheet | 342KB |
-| CDM-for-Collateral-Initiatives-factsheet-2024.pdf | Collateral use cases | 364KB |
+| CDM-for-Collateral-Initiatives-factsheet-2024.pdf | Collateral use cases for CDM | 364KB |
 | Digital-Regulatory-Reporting-DRR-Fact-Sheet_042823.pdf | DRR overview | 121KB |
 | Digital-Regulatory-Reporting-Market-and-Regulatory-Initiatives.pdf | DRR market analysis | 327KB |
 | Industry-Perspectives-on-the-ISDA-DRR-*.pdf | DRR adoption report (Nov 2025) | 398KB |
-| Collateral-and-Liquidity-Efficiency-in-the-Derivatives-Market.pdf | IFLD whitepaper | 362KB |
-| Creating-Value-IQ-June-2025.pdf | GenAI + CDM research | 8.9MB |
 | CDM-Launch-Press-Release-FINAL.pdf | CDM launch announcement | 216KB |
-| Demystifying-Collateral-Optimization.pdf | Collateral optimization guide | 201KB |
 | Digital-Asset-ISDA-CDM-Adoption-Press-Release.pdf | Digital Asset CDM adoption | 386KB |
+| Milestone-Update-for-the-Common-Domain-Model.pdf | CDM milestone update | 154KB |
+| Vermeg-Integrates-CDM-into-Colline-Collateral-Management-System.pdf | Vermeg CDM integration | 154KB |
+
+#### Industry Context Documents (10 files)
+
+Broader derivatives, collateral, and smart contracts industry documents that provide context for CDM adoption:
+
+| File | Description | Size |
+|------|-------------|------|
+| Collateral-and-Liquidity-Efficiency-in-the-Derivatives-Market.pdf | IFLD whitepaper | 362KB |
+| Creating-Value-IQ-June-2025.pdf | IQ magazine (GenAI focus) | 8.9MB |
+| Marking-a-Milestone-IQ-January-2025.pdf | IQ magazine (milestone edition) | 5.8MB |
+| Demystifying-Collateral-Optimization.pdf | Collateral optimization guide | 201KB |
 | GenAI-in-the-Derivatives-Market-A-Future-Perspective.pdf | GenAI derivatives analysis | 268KB |
 | Guidelines-for-Smart-Contracts-CDS.pdf | Smart contracts for CDS | 806KB |
-| ISDA-Clause-Library-factsheet-2021.pdf | Clause Library overview | 1.1MB |
-| ISDA-and-KWM-Publish-Smart-Contracts-Whitepaper-03102018.pdf | Smart contracts whitepaper | 53KB |
-| Marking-a-Milestone-IQ-January-2025.pdf | IQ milestone edition | 5.8MB |
-| Milestone-Update-for-the-Common-Domain-Model.pdf | CDM milestone update | 154KB |
 | Smart-Derivatives-Contracts-From-Concept-to-Construction-Oct-2018.pdf | Smart derivatives construction | 342KB |
-| Vermeg-Integrates-CDM-into-Colline-Collateral-Management-System.pdf | Vermeg CDM integration | 154KB |
+| ISDA-and-KWM-Publish-Smart-Contracts-Whitepaper-03102018.pdf | Smart contracts whitepaper | 53KB |
+| ISDA-Clause-Library-factsheet-2021.pdf | Clause Library overview | 1.1MB |
 | infrastructure-white-paper.pdf | Infrastructure whitepaper | 1.0MB |
 
 **Source URL:** https://www.isda.org/isda-solutions-infohub/cdm/
