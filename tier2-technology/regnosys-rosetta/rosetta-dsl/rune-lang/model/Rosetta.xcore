@@ -1,0 +1,525 @@
+@Ecore(nsURI="http://www.rosetta-model.com/Rosetta")
+@GenModel(fileExtensions="rosetta", modelDirectory="/rune-lang/emf-gen/main/java", operationReflection="false",
+	copyrightText="Copyright (c) REGnosys 2017 (www.regnosys.com)", forceOverwrite="true", updateClasspath="false",
+	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
+package com.regnosys.rosetta.rosetta
+
+import com.google.common.collect.Iterables
+import java.util.stream.Collectors
+import com.regnosys.rosetta.rosetta.simple.Annotated
+import com.regnosys.rosetta.rosetta.simple.BuiltinAnnotationWithPath
+import com.regnosys.rosetta.rosetta.simple.RootElement
+import com.regnosys.rosetta.rosetta.simple.References
+import com.regnosys.rosetta.rosetta.simple.Data
+import com.regnosys.rosetta.rosetta.simple.Attribute
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation
+import com.regnosys.rosetta.rosetta.expression.RosettaExpression
+import com.regnosys.rosetta.rosetta.expression.SwitchCaseTarget
+import com.regnosys.rosetta.rosetta.simple.Condition
+
+class RosettaModel extends RosettaDefinable {
+	String name
+	contains RosettaScope scope opposite model
+	String version = "0.0.0"
+	boolean overridden
+	contains Import[] imports
+	contains RosettaQualifiableConfiguration[] configurations opposite model 
+	contains RosettaRootElement[] elements opposite model
+}
+
+class RosettaScope extends RosettaNamed, RosettaDefinable {
+    container RosettaModel model opposite scope
+}
+
+class Import {
+	String importedNamespace
+	String namespaceAlias
+}
+
+/**********************************************************************
+ * Common types
+ */
+
+interface RosettaDefinable {
+	String definition
+}
+
+interface RosettaNamed {
+	String name
+}
+
+interface RosettaTyped {
+	contains TypeCall typeCall
+}
+
+interface RosettaFeature extends RosettaNamed {
+}
+
+interface RosettaTypedFeature extends RosettaFeature, RosettaTyped {}
+
+/**
+ * A named symbol that may be used in an expression to reference an object
+ * such as a parameter or a function.
+ */
+interface RosettaSymbol extends RosettaNamed {}
+
+interface RosettaCallableWithArgs extends RosettaSymbol {
+	op int numberOfParameters()
+}
+
+interface RosettaRootElement {
+	container RosettaModel model opposite elements
+}
+
+abstract class RosettaType extends RosettaRootElement, RosettaNamed {
+}
+
+abstract class RosettaTypeWithConditions extends RosettaType {
+	contains Condition[] conditions opposite _enclosingType
+}
+
+interface ParametrizedRosettaType extends RosettaType {
+	contains TypeParameter[] parameters
+}
+
+class TypeCall {
+	refers RosettaType ^type
+	contains TypeCallArgument[] arguments
+}
+
+class TypeCallArgument {
+	refers TypeParameter parameter
+	contains RosettaExpression value
+}
+
+
+/**********************************************************************
+ * Built-in
+ */
+
+abstract class RosettaBuiltinType extends RosettaType, RosettaDefinable {
+}
+
+class RosettaBasicType extends RosettaRootElement, RosettaBuiltinType, ParametrizedRosettaType {
+}
+
+class TypeParameter extends RosettaSymbol, RosettaTyped, RosettaDefinable {}
+
+class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
+}
+
+class RosettaRecordType extends RosettaRootElement, RosettaBuiltinType {
+	contains RosettaRecordFeature[] features
+}
+
+class RosettaRecordFeature extends RosettaTypedFeature {}
+
+class RosettaExternalFunction extends RosettaRootElement, RosettaTyped, RosettaCallableWithArgs, RosettaDefinable {
+	contains RosettaParameter[] parameters
+	
+	op int numberOfParameters() {
+		parameters.size
+	}
+}
+
+class RosettaParameter extends RosettaTyped, RosettaSymbol {
+	boolean isArray
+}
+
+
+/**********************************************************************
+ * Data model
+ */
+class RosettaTypeAlias extends RosettaRootElement, RosettaTypeWithConditions, RosettaTyped, RosettaDefinable, ParametrizedRosettaType {
+}
+
+
+class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaSymbol {
+	
+}
+
+class RosettaEnumeration extends RootElement, RosettaType, RosettaDefinable, References, RosettaSymbol {
+	refers RosettaEnumeration parent
+	contains RosettaSynonym[] synonyms
+	contains RosettaEnumValue[] enumValues opposite enumeration
+}
+
+class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References, Annotated, SwitchCaseTarget {
+	String display
+	contains RosettaEnumSynonym[] enumSynonyms
+	container RosettaEnumeration enumeration opposite enumValues
+}
+
+class RosettaEnumValueReference extends RosettaMapTestExpression {
+	refers RosettaEnumeration enumeration
+	refers RosettaEnumValue value
+}
+
+class RosettaCardinality {
+	int inf
+	int sup
+	boolean unbounded
+	
+	derived boolean isMany get {
+		unbounded || sup > 1 || sup != 1 // ??? sup of 0 is counted as multiple
+	}
+	
+	op String toConstraintString() {
+		if (this.unbounded) {
+			return "(" + this.inf + "..*)"; 
+		}
+		return "(" + this.inf + ".." + this.sup + ")";
+	}
+	op boolean constraintEquals(RosettaCardinality other) {
+		if (other === null) {
+			return false;
+		}
+		if (this.isUnbounded()) {
+			return other.isUnbounded() && this.getInf() == other.getInf();
+		}
+		return this.getInf() == other.getInf() && this.getSup() == other.getSup();
+	}
+	op int constraintHashCode() {
+		var int hash = 3;
+		hash = 53 * hash + Boolean.hashCode(this.isUnbounded());
+		hash = 53 * hash + Integer.hashCode(this.getInf());
+		if (!this.isUnbounded()) {
+			hash = 53 * hash + Integer.hashCode(this.getSup());
+		}
+		return hash;
+	}
+	op boolean isSubconstraintOf(RosettaCardinality superConstraint) {
+		return this.getInf() >= superConstraint.getInf() &&
+				(superConstraint.isUnbounded() || !this.isUnbounded() && this.getSup() <= superConstraint.getSup());
+	}
+	op RosettaCardinality add(RosettaCardinality other) {
+		val c = RosettaFactory.eINSTANCE.createRosettaCardinality
+		c.inf = inf + other.inf
+		if (unbounded || other.unbounded) {
+			c.unbounded = true
+		} else {
+			c.sup = sup + other.sup
+		}
+		return c
+	}
+	op RosettaCardinality operator_plus(RosettaCardinality other) {
+		return this.add(other)
+	}
+	op RosettaCardinality multiply(RosettaCardinality other) {
+		val c = RosettaFactory.eINSTANCE.createRosettaCardinality
+		c.inf = inf * other.inf
+		if ((!unbounded && sup === 0) || (!other.unbounded && other.sup === 0)) {
+			c.sup = 0
+		} else if (unbounded || other.unbounded) {
+			c.unbounded = true
+		} else {
+			c.sup = sup * other.sup
+		}
+		return c
+	}
+	op RosettaCardinality operator_multiply(RosettaCardinality other) {
+		return this.multiply(other)
+	}
+	
+	derived boolean empty get {
+		!unbounded && sup == 0
+	}
+	derived boolean optional get {
+		return !unbounded && inf == 0 && sup == 1
+	}
+	derived boolean singular get {
+		return !unbounded && inf == 1 && sup == 1
+	}
+	derived boolean plural get {
+		return unbounded || sup > 1
+	}
+}
+
+
+/**********************************************************************
+ * Synonyms
+ */
+
+abstract class RosettaSynonymBase {
+	refers RosettaSynonymSource[] sources
+}
+
+class RosettaSynonymValueBase {
+	String name
+	RosettaSynonymRef refType
+	int value
+	String path
+	int maps
+}
+
+class RosettaClassSynonym extends RosettaSynonymBase {
+	contains RosettaSynonymValueBase value
+	contains RosettaSynonymValueBase metaValue
+}
+
+class RosettaSynonym extends RosettaSynonymBase {
+	contains RosettaSynonymBody body
+}
+
+class RosettaSynonymBody {
+	contains RosettaSynonymValueBase[] values
+	contains RosettaMapping mappingLogic
+	String[] hints
+	contains RosettaMergeSynonymValue merge
+	String[] metaValues
+	String mapper
+	String format
+	String patternMatch
+	String patternReplace
+	boolean removeHtml
+}
+
+class RosettaMergeSynonymValue {
+	String name
+	String excludePath
+}
+
+class RosettaEnumSynonym extends RosettaSynonymBase, RosettaDefinable {
+	String synonymValue
+	String patternMatch
+	String patternReplace
+	boolean removeHtml
+}
+
+enum RosettaSynonymRef {
+	tag
+	componentID = 1
+}
+
+
+/**********************************************************************
+ * docReferences
+ */
+
+class RosettaDocReference extends BuiltinAnnotationWithPath {
+	contains RegulatoryDocumentReference docReference
+	contains DocumentRationale[] rationales
+	String structuredProvision
+	String provision
+	boolean reportedField
+}
+
+class RegulatoryDocumentReference {
+	refers RosettaBody body
+	refers RosettaCorpus[] corpusList
+	contains RosettaSegmentRef[] segments
+}
+
+class RosettaSegmentRef {
+	refers RosettaSegment segment
+	String segmentRef
+}
+
+class DocumentRationale {
+	String rationale
+	String rationaleAuthor
+}
+
+class RosettaBody extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	String bodyType
+}
+
+class RosettaCorpus extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+	String corpusType
+	String displayName
+	refers RosettaBody body
+}
+
+class RosettaSegment extends RosettaRootElement, RosettaNamed {
+}
+
+/**********************************************************************
+ * Mappings
+ */
+
+interface RosettaMapTest {}
+
+interface RosettaMapTestExpression extends RosettaMapTest {}
+
+class RosettaMapPathValue extends RosettaMapTestExpression {
+	String path
+}
+
+class RosettaMapTestExistsExpression extends RosettaMapTestExpression {
+	contains RosettaMapTestExpression argument
+}
+
+class RosettaMapTestAbsentExpression extends RosettaMapTestExpression {
+	contains RosettaMapTestExpression argument
+}
+
+class RosettaMapTestEqualityOperation extends RosettaMapTestExpression {
+	contains RosettaMapTestExpression left
+	contains RosettaMapTestExpression right
+	String operator
+}
+
+class RosettaMapTestFunc extends RosettaMapTestExpression {
+	refers RosettaCallableWithArgs func
+	contains RosettaMapPathValue predicatePath
+}
+
+interface RosettaAttributeReferenceSegment {}
+
+class RosettaDataReference extends RosettaAttributeReferenceSegment {
+	refers Data data
+}
+
+class RosettaAttributeReference extends RosettaAttributeReferenceSegment {
+	contains RosettaAttributeReferenceSegment receiver
+	refers Attribute attribute
+}
+
+class RosettaMapping {
+	contains RosettaMappingInstance[] instances
+}
+
+class RosettaMappingInstance {
+	contains RosettaMapTestExpression ^set
+	contains RosettaMappingPathTests when
+	boolean ^default
+}
+
+class RosettaMappingPathTests {
+	contains RosettaMapTest[] tests
+}
+
+class RosettaMapPath extends RosettaMapTest {
+	contains RosettaMapPathValue path
+}
+
+class RosettaMapRosettaPath extends RosettaMapTest {
+	contains RosettaAttributeReferenceSegment path
+}
+
+/**********************************************************************
+ * Qualifiable used for RosettaProduct and RosettaEvent. Check enum RosettaQualifiableType when adding new classes
+ */
+
+class RosettaQualifiableConfiguration {
+	RosettaQualifiableType qType
+	refers RosettaModel model opposite configurations
+	refers Data rosettaClass
+	
+}
+
+enum RosettaQualifiableType {
+	None, Event, Product
+}
+
+/*****************************************
+ * Translate external synonym support
+ *****************************************/
+
+abstract class ExternalAnnotationSource extends RosettaRootElement, RosettaNamed {
+	contains RosettaExternalClass[] externalClasses
+	contains RosettaExternalEnum[] externalEnums
+	
+	// refers ExternalAnnotationSource[] superSources
+	
+	op RosettaExternalRef[] getExternalRefs() {
+		Iterables.concat(externalClasses, externalEnums).toEList
+	}
+}
+
+abstract class RosettaExternalRef {
+	op RosettaType getTypeRef()
+}
+
+class RosettaExternalClass extends RosettaExternalRef {
+	refers Data data
+	contains RosettaExternalClassSynonym[] externalClassSynonyms
+	contains RosettaExternalRegularAttribute[] regularAttributes
+	
+	op RosettaType getTypeRef() {
+		data
+	}
+}
+
+class RosettaExternalEnum extends RosettaExternalRef {
+	refers RosettaEnumeration enumeration
+	contains RosettaExternalEnumValue[] regularValues
+	
+	op RosettaType getTypeRef() {
+		enumeration
+	}
+}
+
+enum ExternalValueOperator {
+	PLUS
+	MINUS
+}
+
+class RosettaExternalRegularAttribute {
+	ExternalValueOperator operator
+	refers RosettaFeature attributeRef
+	contains RosettaExternalSynonym[] externalSynonyms
+	contains RuleReferenceAnnotation[] externalRuleReferences
+}
+
+class RosettaExternalEnumValue {
+	ExternalValueOperator operator
+	refers RosettaEnumValue enumRef
+	contains RosettaEnumSynonym[] externalEnumSynonyms
+}
+
+class RosettaExternalClassSynonym {
+	contains RosettaSynonymValueBase value
+	contains RosettaSynonymValueBase metaValue
+}
+
+class RosettaExternalSynonym {
+	contains RosettaSynonymBody body
+}
+
+class RosettaExternalSynonymSource extends ExternalAnnotationSource, RosettaSynonymSource {
+	// @Compat: move this one up to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed
+	refers RosettaSynonymSource[] superSources
+	
+	op RosettaSynonymSource[] getSuperSynonymSources(){
+		return superSources.filter(RosettaSynonymSource).toEList
+	}
+}
+
+class RosettaExternalRuleSource extends ExternalAnnotationSource {
+	// @Compat: move this one up to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed
+	refers ExternalAnnotationSource[] superSources
+	
+	op RosettaExternalRuleSource[] getSuperRuleSources(){
+		return superSources.filter(RosettaExternalRuleSource).toEList
+	}
+}
+
+/********************
+* Reports and rules - Should be a separate grammar
+*/
+
+class RosettaReport extends RosettaRootElement {
+	contains RegulatoryDocumentReference regulatoryBody
+	refers RosettaRule[] eligibilityRules
+	refers RosettaCorpus reportingStandard // @Compat: this attribute is unnecessary
+	contains TypeCall inputType
+	refers Data reportType
+	refers RosettaExternalRuleSource ruleSource
+	
+	op String getRegulatoryId() {
+		(getRegulatoryBody.getBody.name.toFirstUpper 
+				+ getRegulatoryBody.corpusList.stream.map[RosettaCorpus man | man.name.toFirstUpper].collect(Collectors.joining()))
+	}
+}
+
+class RosettaRule extends RosettaRootElement, RosettaCallableWithArgs, RosettaDefinable, References {
+	boolean eligibility
+	contains RosettaExpression expression
+	String identifier
+	contains TypeCall input
+	
+	op int numberOfParameters() {
+		1
+	}
+}
