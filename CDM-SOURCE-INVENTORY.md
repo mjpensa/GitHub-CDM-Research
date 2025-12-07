@@ -35,15 +35,15 @@
 ├── tier3-training/
 │   └── linux-foundation/ (1 file)
 ├── tier4-regulatory/
-│   ├── bank-of-england/  (2 files)
-│   ├── fca-uk/           (2 files)
-│   ├── esma/             (2 files)
-│   ├── cftc/             (4 files)
-│   ├── sec-us/           (1 file - FDTA)
-│   ├── mas-singapore/    (2 files)
-│   ├── jfsa-japan/       (1 file)
-│   ├── asic/             (1 file)
-│   └── hkma-hong-kong/   (2 files)
+│   ├── cdm-specific/     (3 files - documents that directly reference CDM)
+│   └── reporting-context/ (14 files - underlying regulatory requirements)
+│       ├── cftc/             (4 files)
+│       ├── esma/             (2 files)
+│       ├── fca-uk/           (2 files)
+│       ├── mas-singapore/    (2 files)
+│       ├── jfsa-japan/       (1 file)
+│       ├── asic/             (1 file)
+│       └── hkma-hong-kong/   (2 files)
 ├── tier5-consulting/
 │   ├── ey/              (1 file)
 │   └── pa-consulting/   (1 file)
@@ -188,31 +188,31 @@
 
 ---
 
-## Tier 4: Regulatory Bodies (8 jurisdictions, 17 files)
+## Tier 4: Regulatory Bodies
 
-### Bank of England / FCA - UK (4 files)
+### CDM-Specific Documents (3 files)
 
-| File | Description | Size |
-|------|-------------|------|
-| transforming-data-collection-from-the-uk-financial-sector-a-plan-for-2021-and-beyond.pdf | TDC Programme Plan | 54KB |
-| digital-regulatory-reporting-2023-update.pdf | DRR Global Initiatives Update | 421KB |
-| uk-emir-reporting-qas-sep-2024.pdf | UK EMIR Reporting Q&As | 851KB |
-| fca-uk-emir-reporting-transition.pdf | UK EMIR Transition Guidance | 123KB |
+Documents that directly reference or propose CDM adoption:
+
+| File | Agency | Description | Size |
+|------|--------|-------------|------|
+| fdta-joint-data-standards-proposed-rule-2024.pdf | Joint US Agencies | Financial Data Transparency Act - **proposes CDM adoption** for federal financial regulators | 545KB |
+| digital-regulatory-reporting-2023-update.pdf | Bank of England | DRR Global Initiatives - **documents CDM deployment** in UK pilot | 421KB |
+| transforming-data-collection-from-the-uk-financial-sector-a-plan-for-2021-and-beyond.pdf | Bank of England | TDC Programme - **references CDM** for data standardization | 54KB |
+
+**Key Finding:** The FDTA proposed rule (Aug 2024) from OCC, Federal Reserve, FDIC, NCUA, CFPB, FHFA, CFTC, SEC, and Treasury explicitly proposes CDM and LEI as standards for financial data interoperability across all US federal financial regulators.
 
 **Source URLs:**
+- https://www.federalregister.gov/documents/2024/08/22/2024-18415/financial-data-transparency-act-joint-data-standards
 - https://www.bankofengland.co.uk/financial-stability/trade-repository-data
-- https://www.fca.org.uk/markets/uk-emir/reporting-obligation
 
-### ESMA - European Union (2 files)
+---
 
-| File | Description | Size |
-|------|-------------|------|
-| esma-emir-qa-2024.pdf | EMIR Implementation Q&A | 1.6MB |
-| esma-position-calculation-guidelines-2024.pdf | Position Calculation Guidelines under EMIR Refit | 270KB |
+### Regulatory Context Documents (14 files)
 
-**Source URL:** https://www.esma.europa.eu/data-reporting/emir-reporting
+The underlying derivatives reporting requirements that ISDA's Digital Regulatory Reporting (DRR) - built on CDM - helps firms comply with. These documents don't mention CDM but define the reporting rules DRR addresses.
 
-### CFTC - United States (4 files)
+#### CFTC - United States (4 files)
 
 | File | Description | Size |
 |------|-------------|------|
@@ -223,19 +223,25 @@
 
 **Source URL:** https://www.cftc.gov/LawRegulation/DoddFrankAct/Rulemakings/
 
-### SEC / Joint Agencies - United States (1 file)
+#### ESMA - European Union (2 files)
 
 | File | Description | Size |
 |------|-------------|------|
-| fdta-joint-data-standards-proposed-rule-2024.pdf | Financial Data Transparency Act Joint Standards (Aug 2024) | 545KB |
+| esma-emir-qa-2024.pdf | EMIR Implementation Q&A | 1.6MB |
+| esma-position-calculation-guidelines-2024.pdf | Position Calculation Guidelines under EMIR Refit | 270KB |
 
-**Note:** Joint proposed rule from OCC, Federal Reserve, FDIC, NCUA, CFPB, FHFA, CFTC, SEC, and Treasury establishing data standards for financial reporting. Proposes use of CDM and LEI for interoperability.
+**Source URL:** https://www.esma.europa.eu/data-reporting/emir-reporting
 
-**Source URLs:**
-- https://www.federalregister.gov/documents/2024/08/22/2024-18415/financial-data-transparency-act-joint-data-standards
-- https://www.sec.gov/about/divisions-offices/division-trading-markets/security-based-swap-markets
+#### FCA - United Kingdom (2 files)
 
-### MAS - Singapore (2 files)
+| File | Description | Size |
+|------|-------------|------|
+| uk-emir-reporting-qas-sep-2024.pdf | UK EMIR Reporting Q&As | 851KB |
+| fca-uk-emir-reporting-transition.pdf | UK EMIR Transition Guidance | 123KB |
+
+**Source URL:** https://www.fca.org.uk/markets/uk-emir/reporting-obligation
+
+#### MAS - Singapore (2 files)
 
 | File | Description | Size |
 |------|-------------|------|
@@ -244,7 +250,7 @@
 
 **Source URL:** https://www.mas.gov.sg/regulation/guidelines/guidelines-on-reporting-of-otc-derivatives-contracts-sfa-06a-g01
 
-### JFSA - Japan (1 file)
+#### JFSA - Japan (1 file)
 
 | File | Description | Size |
 |------|-------------|------|
@@ -252,7 +258,7 @@
 
 **Source URL:** https://www.fsa.go.jp/en/news/2022/20221209-1/20221209-1.html
 
-### ASIC - Australia (1 file)
+#### ASIC - Australia (1 file)
 
 | File | Description | Size |
 |------|-------------|------|
@@ -260,7 +266,7 @@
 
 **Source URL:** https://www.asic.gov.au/regulatory-resources/markets/otc-derivatives/derivative-transaction-reporting/
 
-### HKMA - Hong Kong (2 files)
+#### HKMA - Hong Kong (2 files)
 
 | File | Description | Size |
 |------|-------------|------|
@@ -268,6 +274,8 @@
 | hktr-reporting-service-reference-manual.pdf | HKTR Reporting Service Manual | 588KB |
 
 **Source URL:** https://www.hkma.gov.hk/eng/key-functions/banking/banking-regulatory-and-supervisory-regime/
+
+---
 
 ### DRR Regulatory Coverage Summary
 
