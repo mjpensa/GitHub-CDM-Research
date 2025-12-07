@@ -38,7 +38,8 @@
 │   ├── bank-of-england/  (2 files)
 │   ├── fca-uk/           (2 files)
 │   ├── esma/             (2 files)
-│   ├── cftc/             (3 files)
+│   ├── cftc/             (4 files)
+│   ├── sec-us/           (1 file - FDTA)
 │   ├── mas-singapore/    (2 files)
 │   ├── jfsa-japan/       (1 file)
 │   ├── asic/             (1 file)
@@ -187,7 +188,7 @@
 
 ---
 
-## Tier 4: Regulatory Bodies (8 jurisdictions, 15 files)
+## Tier 4: Regulatory Bodies (8 jurisdictions, 17 files)
 
 ### Bank of England / FCA - UK (4 files)
 
@@ -211,15 +212,28 @@
 
 **Source URL:** https://www.esma.europa.eu/data-reporting/emir-reporting
 
-### CFTC - United States (3 files)
+### CFTC - United States (4 files)
 
 | File | Description | Size |
 |------|-------------|------|
 | cftc-swap-reporting-part43-2020.pdf | Real-Time Public Reporting Rules | 1.8MB |
 | cftc-swap-reporting-part45-2020.pdf | Swap Data Recordkeeping & Reporting Rules | 3.3MB |
 | cftc-sdr-verification-2020.pdf | SDR Data Accuracy & Verification Rules | 922KB |
+| cftc-technical-specification-v3.2-mar-2023.pdf | Parts 43/45 Technical Specification v3.2 | 3.2MB |
 
 **Source URL:** https://www.cftc.gov/LawRegulation/DoddFrankAct/Rulemakings/
+
+### SEC / Joint Agencies - United States (1 file)
+
+| File | Description | Size |
+|------|-------------|------|
+| fdta-joint-data-standards-proposed-rule-2024.pdf | Financial Data Transparency Act Joint Standards (Aug 2024) | 545KB |
+
+**Note:** Joint proposed rule from OCC, Federal Reserve, FDIC, NCUA, CFPB, FHFA, CFTC, SEC, and Treasury establishing data standards for financial reporting. Proposes use of CDM and LEI for interoperability.
+
+**Source URLs:**
+- https://www.federalregister.gov/documents/2024/08/22/2024-18415/financial-data-transparency-act-joint-data-standards
+- https://www.sec.gov/about/divisions-offices/division-trading-markets/security-based-swap-markets
 
 ### MAS - Singapore (2 files)
 
