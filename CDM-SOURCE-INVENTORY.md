@@ -35,7 +35,14 @@
 ├── tier3-training/
 │   └── linux-foundation/ (1 file)
 ├── tier4-regulatory/
-│   └── bank-of-england/ (1 file)
+│   ├── bank-of-england/  (2 files)
+│   ├── fca-uk/           (2 files)
+│   ├── esma/             (2 files)
+│   ├── cftc/             (3 files)
+│   ├── mas-singapore/    (2 files)
+│   ├── jfsa-japan/       (1 file)
+│   ├── asic/             (1 file)
+│   └── hkma-hong-kong/   (2 files)
 ├── tier5-consulting/
 │   ├── ey/              (1 file)
 │   └── pa-consulting/   (1 file)
@@ -180,15 +187,86 @@
 
 ---
 
-## Tier 4: Regulatory Bodies
+## Tier 4: Regulatory Bodies (8 jurisdictions, 15 files)
 
-### Bank of England (1 file)
+### Bank of England / FCA - UK (4 files)
 
 | File | Description | Size |
 |------|-------------|------|
 | transforming-data-collection-from-the-uk-financial-sector-a-plan-for-2021-and-beyond.pdf | TDC Programme Plan | 54KB |
+| digital-regulatory-reporting-2023-update.pdf | DRR Global Initiatives Update | 421KB |
+| uk-emir-reporting-qas-sep-2024.pdf | UK EMIR Reporting Q&As | 851KB |
+| fca-uk-emir-reporting-transition.pdf | UK EMIR Transition Guidance | 123KB |
 
-**Source URL:** https://www.bankofengland.co.uk/paper/2021/transforming-data-collection-from-the-uk-financial-sector-a-plan-for-2021-and-beyond
+**Source URLs:**
+- https://www.bankofengland.co.uk/financial-stability/trade-repository-data
+- https://www.fca.org.uk/markets/uk-emir/reporting-obligation
+
+### ESMA - European Union (2 files)
+
+| File | Description | Size |
+|------|-------------|------|
+| esma-emir-qa-2024.pdf | EMIR Implementation Q&A | 1.6MB |
+| esma-position-calculation-guidelines-2024.pdf | Position Calculation Guidelines under EMIR Refit | 270KB |
+
+**Source URL:** https://www.esma.europa.eu/data-reporting/emir-reporting
+
+### CFTC - United States (3 files)
+
+| File | Description | Size |
+|------|-------------|------|
+| cftc-swap-reporting-part43-2020.pdf | Real-Time Public Reporting Rules | 1.8MB |
+| cftc-swap-reporting-part45-2020.pdf | Swap Data Recordkeeping & Reporting Rules | 3.3MB |
+| cftc-sdr-verification-2020.pdf | SDR Data Accuracy & Verification Rules | 922KB |
+
+**Source URL:** https://www.cftc.gov/LawRegulation/DoddFrankAct/Rulemakings/
+
+### MAS - Singapore (2 files)
+
+| File | Description | Size |
+|------|-------------|------|
+| mas-derivatives-reporting-guidelines-may-2024.pdf | OTC Derivatives Reporting Guidelines | 834KB |
+| mas-derivatives-reporting-faq-feb-2024.pdf | Derivatives Reporting FAQ | 834KB |
+
+**Source URL:** https://www.mas.gov.sg/regulation/guidelines/guidelines-on-reporting-of-otc-derivatives-contracts-sfa-06a-g01
+
+### JFSA - Japan (1 file)
+
+| File | Description | Size |
+|------|-------------|------|
+| jfsa-otc-derivatives-reporting-guidelines-2022.pdf | OTC Derivatives Reporting Guidelines | 540KB |
+
+**Source URL:** https://www.fsa.go.jp/en/news/2022/20221209-1/20221209-1.html
+
+### ASIC - Australia (1 file)
+
+| File | Description | Size |
+|------|-------------|------|
+| asic-rg251-derivative-transaction-reporting-oct-2024.pdf | Regulatory Guide 251 (Oct 2024) | 659KB |
+
+**Source URL:** https://www.asic.gov.au/regulatory-resources/markets/otc-derivatives/derivative-transaction-reporting/
+
+### HKMA - Hong Kong (2 files)
+
+| File | Description | Size |
+|------|-------------|------|
+| hkma-otc-derivatives-consultation-mar-2024.pdf | OTC Derivatives Regime Consultation | 735KB |
+| hktr-reporting-service-reference-manual.pdf | HKTR Reporting Service Manual | 588KB |
+
+**Source URL:** https://www.hkma.gov.hk/eng/key-functions/banking/banking-regulatory-and-supervisory-regime/
+
+### DRR Regulatory Coverage Summary
+
+| Jurisdiction | Regulator | Go-Live Date | ISO 20022 | CDM/DRR Support |
+|--------------|-----------|--------------|-----------|-----------------|
+| United States | CFTC | Dec 2022 | Yes | Yes |
+| European Union | ESMA | Apr 2024 | Yes | Yes |
+| United Kingdom | FCA/BoE | Sep 2024 | Yes | Yes |
+| Japan | JFSA | Apr 2024 | Yes | Yes |
+| Singapore | MAS | Oct 2024 | Yes | Yes |
+| Australia | ASIC | Oct 2024 | Yes | Yes |
+| Hong Kong | HKMA | Sep 2025 | Yes | Planned |
+| Canada | CSA | Jul 2025 | Yes | Planned |
 
 ---
 
