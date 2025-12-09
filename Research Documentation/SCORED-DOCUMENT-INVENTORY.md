@@ -7,6 +7,42 @@
 
 ---
 
+## Full Corpus Scoring (517 Files)
+
+This inventory contains **manually scored priority documents** (24 files). For the complete 517-file corpus with automated scoring, see:
+
+| Resource | Description |
+|----------|-------------|
+| [FILE-MANIFEST.md](./FILE-MANIFEST.md) | Complete inventory with categories, exclusions, and gap coverage |
+| [AUTOMATED-SCORES.csv](./AUTOMATED-SCORES.csv) | Raw automated keyword scores for all files |
+| [score_files_v2.sh](../score_files_v2.sh) | Enhanced scoring script |
+
+### Automated Scoring Summary
+
+| Category | Count | Notes |
+|----------|-------|-------|
+| **Tier S (Score 100+)** | 11 | Automated high-priority candidates |
+| **PDFs (Manual Review)** | 62 | Require manual 5-dimension scoring |
+| **Excluded** | 145 | Versioned duplicates, templates, licenses |
+| **Low Priority** | 299 | Reference only |
+
+### Top 11 by Automated Score
+
+| Rank | Score | File | Key Strengths |
+|------|-------|------|---------------|
+| 1 | 2148 | Collateral-and-Liquidity-Efficiency-in-the-Derivatives-Market.md | Asset class, regulatory |
+| 2 | 1547 | fdta-joint-data-standards-proposed-rule-2024.md | Regulatory (FDTA) |
+| 3 | 1119 | ISDA-CDM-Research-Transcript.md | Strategic, smart contracts |
+| 4 | 1058 | Industry-Perspectives-on-the-ISDA-DRR.md | Implementation, quant |
+| 5 | 910 | ISDA-CDM-Research-Report.md | Strategic, banks |
+| 6 | 847 | GenAI-in-the-Derivatives-Market.md | Regulatory, training |
+| 7 | 790 | SCORED-DOCUMENT-INVENTORY.md | Recent, asset class |
+| 8 | 733 | CDM-Overview-Nov.md | Asset class, regulatory |
+| 9 | 468 | CDM-SOURCE-INVENTORY.md | Asset class, regulatory |
+| 10 | 337 | DOCUMENT-SCORING-TEMPLATE.md | Recent, implementation |
+
+---
+
 ## Executive Summary Gaps Targeted
 
 | Gap ID | Gap Description | Priority | Status |
